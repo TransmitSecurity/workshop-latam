@@ -1,0 +1,33 @@
+{
+  "folders": [
+    {
+      "name": "ROOT",
+      "path": "../"
+    },
+    {
+      "name": "webinar-server",
+      "path": "../webinar-server"
+    },
+    {
+      "name": "webinar-vanilla-js",
+      "path": "../webinar-vanilla-js"
+    },
+    {
+      "name": "webinar-react",
+      "path": "../webinar-react"
+    },
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "node_modules/": true,
+    },
+    "jest.autoEnable": false,
+    "jest.disabledWorkspaceFolders": [
+      ".vscode",
+      "node_modules",
+    ]
+  }
+}

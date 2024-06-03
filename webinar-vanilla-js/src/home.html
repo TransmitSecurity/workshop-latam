@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/transmit-favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transmit Security Demo</title>
+  </head>
+  <body>
+    <div class="flex flex-col justify-between min-h-screen">
+      <header class="border-b border-palette-lighter sticky top-0 z-20 bg-white">
+        <div class="flex items-center justify-between mx-auto max-w-6xl px-6 pb-2 pt-4 md:pt-6">
+          <a class="cursor-pointer" href="/home.html">
+            <h1 class="no-underline text-2xl xl:text-3xl font-semibold">
+              <span class="bg-indigo-900 text-white font-semibold rounded-full py-1 px-2">AI</span>
+              <span class="text-slate-900">N</span><span class="text-slate-700">F</span
+              ><span class="text-slate-500">T</span>
+              <span class="text-3xl ina-logo text-indigo-600">Art</span>
+            </h1>
+          </a>
+          <div class="flex gap-x-3">
+            <a class="relative" aria-label="cart" href="/cart.html">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                alt="shopping cart"
+                src="/icon-shopcart.svg" />
+              <div
+                id="cart-items"
+                class="hidden absolute top-0 right-0 text-xs bg-yellow-300 text-gray-900 font-semibold rounded-full py-1 px-2 transform translate-x-4 -translate-y-3"></div>
+            </a>
+            <div class="relative inline-block text-left mr-2 cursor-pointer">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                id="profile-icon"
+                alt="profile"
+                src="/icon-profile.svg" />
+            </div>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div class="mx-auto max-w-6xl">
+          <div class="">
+            <h1 class="ina-title text-center text-palette-primary mt-4 py-2 sm:py-4">
+              Get unique AI-created <span class="ina-logo text-3xl"> Art </span> Images!
+            </h1>
+            <p class="max-w-xl text-center px-2 mx-auto text-base text-gray-600">
+              Physical art is so last century. Get your hands on some unique digital art created by our AI. Each piece
+              is unique and can be yours for a small fee.
+            </p>
+          </div>
+          <div
+            id="collection"
+            class="py-12 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8"></div>
+        </div>
+      </main>
+      <footer class="bg-gray-100 py-8 text-center">
+        <p class="text-gray-600">&copy; 2024 Demo App.</p>
+      </footer>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+    <script type="module">
+      import { storeGetUser } from './main.js';
+
+      const createArtCard = (item) => {
+        const anchor = document.createElement('a');
+        anchor.className = 'h-120 w-72 rounded shadow-lg mx-auto border border-palette-lighter';
+        anchor.href = `/product.html?item=${item.id}`;
+        anchor.innerHTML = `
+          <div class="h-72 border-b-2 border-palette-lighter relative">
+            <div style="display: block; overflow: hidden; position: absolute; top: 0; left: 0; bottom: 0; right: 0; box-sizing: border-box; margin: 0;">
+              <img
+                alt="${item.title}"
+                src="${import.meta.env.VITE_BACKEND_BASE_URL}${item.imageUrl}"
+                decoding="async"
+                class="transform duration-500 ease-in-out hover:scale-110"
+                style="position: absolute; top: 0; left: 0; bottom: 0; right: 0; box-sizing: border-box; padding: 0; border: none; margin: auto; display: block; width: 0;
+                  height: 0; min-width: 100%; max-width: 100%; min-height: 100%; max-height: 100%;"
+              />
+            </div>
+          </div>
+          <div class="h-48 relative">
+            <div class="font-primary text-palette-primary text-2xl pt-4 px-4 font-semibold">${item.title}</div>
+            <div class="text-lg text-gray-600 p-4 font-primary font-light">${item.subtitle}</div>
+            <div class="text-palette-dark font-primary font-medium text-base absolute bottom-0 right-0 mb-4 pl-8 pr-4 pb-1 pt-2 bg-palette-lighter rounded-tl-sm triangle">
+              $<span class="text-lg">${item.price}</span>
+            </div>
+          </div>
+        `;
+        return anchor;
+      };
+      const addArtCards = (data) => {
+        const collection = document.getElementById('collection');
+        if (data.length === 0) {
+          collection.className = '';
+          collection.innerHTML = '<p class="w-full text-center text-red-500 mt-8">No art available</p>';
+        } else {
+          data.forEach((item) => collection.appendChild(createArtCard(item)));
+        }
+      };
+
+      const user = storeGetUser();
+      const token = user?.token;
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/art/all`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (resp.status !== 200) {
+          collection.className = '';
+          collection.innerHTML =
+            '<p class="w-full text-center text-red-500 mt-8">Art gallery not available, try again later, sorry :/</p>';
+        } else {
+          const data = await resp.json();
+          addArtCards(data);
+        }
+      } catch (error) {
+        console.error(error);
+        collection.className = '';
+        collection.innerHTML =
+          '<p class="w-full text-center text-red-500 mt-8">Art gallery not available, try again later, sorry :/</p>';
+      }
+    </script>
+  </body>
+</html>

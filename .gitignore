@@ -1,0 +1,5 @@
+.env
+_*
+.vscode/settings.json
+node_modules/
+webinar-server/src/db/database.json

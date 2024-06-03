@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/transmit-favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transmit Security Demo</title>
+  </head>
+
+  <body>
+    <div class="flex flex-col justify-between min-h-screen">
+      <header class="border-b border-palette-lighter sticky top-0 z-20 bg-white">
+        <div class="flex items-center justify-between mx-auto max-w-6xl px-6 pb-2 pt-4 md:pt-6">
+          <a class="cursor-pointer" href="/home.html">
+            <h1 class="no-underline text-2xl xl:text-3xl font-semibold">
+              <span class="bg-indigo-900 text-white font-semibold rounded-full py-1 px-2">AI</span>
+              <span class="text-slate-900">N</span><span class="text-slate-700">F</span
+              ><span class="text-slate-500">T</span>
+              <span class="text-3xl ina-logo text-indigo-600">Art</span>
+            </h1>
+          </a>
+          <div class="flex gap-x-3">
+            <a class="relative" aria-label="cart" href="/cart.html">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                alt="shopping cart"
+                src="/icon-shopcart.svg" />
+              <div
+                id="cart-items"
+                class="hidden absolute top-0 right-0 text-xs bg-yellow-300 text-gray-900 font-semibold rounded-full py-1 px-2 transform translate-x-4 -translate-y-3"></div>
+            </a>
+            <div class="relative inline-block text-left mr-2 cursor-pointer">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                id="profile-icon"
+                alt="profile"
+                src="/icon-profile.svg" />
+            </div>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div class="container mx-auto mb-20 min-h-screen">
+          <h1
+            class="leading-relaxed font-primary font-extrabold text-4xl text-center text-palette-primary mt-2 py-2 sm:py-4">
+            Checkout
+          </h1>
+          <div class="min-h-80 max-w-2xl mt-4 sm:mt-8 mx-auto w-full">
+            <h2 class="text-2xl font-bold text-[#333] pb-4 pl-6">Order details</h2>
+            <table class="mx-auto">
+              <thead>
+                <tr class="uppercase text-xs sm:text-sm text-palette-primary border-b border-palette-light">
+                  <th class="font-primary font-normal md:px-20 px-6 py-4">Product</th>
+                  <th class="font-primary font-normal md:px-20 px-6 py-4">Quantity</th>
+                  <th class="font-primary font-normal md:px-20 px-6 py-4 hidden sm:table-cell">Price</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-palette-lighter"></tbody>
+              <tfoot class="border-t border-palette-light">
+                <tr class="text-center">
+                  <td></td>
+                  <td class="font-primary text-base text-gray-600 font-medium uppercase px-4 sm:px-6 py-1">Subtotal</td>
+                  <td class="font-primary text-base text-gray-600 font-medium px-4 sm:px-6 py-1">
+                    $<span id="subtotal" class="text-base">0.00</span>
+                  </td>
+                </tr>
+                <tr class="text-center">
+                  <td></td>
+                  <td class="font-primary text-base text-gray-600 font-medium uppercase px-4 sm:px-6 py-1">
+                    Taxes (<span id="tax-rate"></span>)
+                  </td>
+                  <td class="font-primary text-base text-gray-600 font-medium px-4 sm:px-6 py-1">
+                    $<span id="taxes" class="text-base">0.00</span>
+                  </td>
+                </tr>
+                <tr class="text-center border-t border-palette-light">
+                  <td></td>
+                  <td class="font-primary text-xl text-gray-600 font-semibold uppercase px-4 sm:px-6 py-4">Total</td>
+                  <td class="font-primary text-xl text-palette-primary font-medium px-4 sm:px-6 py-1">
+                    $<span id="total" class="text-xl">0.00</span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+            <div
+              id="div-empty"
+              class="hidden flex flex-col items-center justify-center max-w-sm mx-auto space-y-4 px-2">
+              <img src="/img/empty-cart.jpeg" alt="cart is empty" class="w-64 mb-4" />
+
+              <a aria-label="back-to-products" class="ina-btn-white" href="/home.html">
+                <img
+                  src="/icon-arrow-left.svg"
+                  alt="back"
+                  class="svg-inline--fa fa-arrow-left fa-w-14 w-4 mr-2 inline-flex" />
+                Back To Collection
+              </a>
+            </div>
+          </div>
+          <div id="checkout-details" class="min-h-80 max-w-2xl mx-auto px-2 pt-6 w-full">
+            <div class="xl:col-span-2 h-max rounded-md p-4 sticky top-0">
+              <h2 class="text-2xl font-bold text-[#333]">Complete your order</h2>
+              <form class="mt-10">
+                <div>
+                  <h3 class="text-lg font-bold text-[#333] mb-6">Personal Details</h3>
+                  <div class="grid sm:grid-cols-2 gap-6">
+                    <div class="relative flex items-center">
+                      <input
+                        id="co-first-name"
+                        name="co-first-name"
+                        type="text"
+                        placeholder="First Name"
+                        required
+                        class="ina-co-form-input" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="#bbb"
+                        stroke="#bbb"
+                        class="w-[18px] h-[18px] absolute right-4"
+                        viewBox="0 0 24 24">
+                        <circle cx="10" cy="7" r="6" data-original="#000000"></circle>
+                        <path
+                          d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
+                          data-original="#000000"></path>
+                      </svg>
+                    </div>
+                    <div class="relative flex items-center">
+                      <input
+                        id="co-last-name"
+                        name="co-last-name"
+                        type="text"
+                        placeholder="Last Name"
+                        required
+                        class="ina-co-form-input" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="#bbb"
+                        stroke="#bbb"
+                        class="w-[18px] h-[18px] absolute right-4"
+                        viewBox="0 0 24 24">
+                        <circle cx="10" cy="7" r="6" data-original="#000000"></circle>
+                        <path
+                          d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
+                          data-original="#000000"></path>
+                      </svg>
+                    </div>
+                    <div class="relative flex items-center">
+                      <input
+                        id="co-email"
+                        name="co-email"
+                        type="email"
+                        placeholder="Email"
+                        required
+                        class="ina-co-form-input" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="#bbb"
+                        stroke="#bbb"
+                        class="w-[18px] h-[18px] absolute right-4"
+                        viewBox="0 0 682.667 682.667">
+                        <defs>
+                          <clipPath id="a" clipPathUnits="userSpaceOnUse">
+                            <path d="M0 512h512V0H0Z" data-original="#000000"></path>
+                          </clipPath>
+                        </defs>
+                        <g clip-path="url(#a)" transform="matrix(1.33 0 0 -1.33 0 682.667)">
+                          <path
+                            fill="none"
+                            stroke-miterlimit="10"
+                            stroke-width="40"
+                            d="M452 444H60c-22.091 0-40-17.909-40-40v-39.446l212.127-157.782c14.17-10.54 33.576-10.54 47.746 0L492 364.554V404c0 22.091-17.909 40-40 40Z"
+                            data-original="#000000"></path>
+                          <path
+                            d="M472 274.9V107.999c0-11.027-8.972-20-20-20H60c-11.028 0-20 8.973-20 20V274.9L0 304.652V107.999c0-33.084 26.916-60 60-60h392c33.084 0 60 26.916 60 60v196.653Z"
+                            data-original="#000000"></path>
+                        </g>
+                      </svg>
+                    </div>
+                    <div class="relative flex items-center">
+                      <input
+                        id="co-phone"
+                        name="co-phone"
+                        type="number"
+                        placeholder="Phone No."
+                        required
+                        class="ina-co-form-input" />
+                      <svg fill="#bbb" class="w-[18px] h-[18px] absolute right-4" viewBox="0 0 64 64">
+                        <path
+                          d="m52.148 42.678-6.479-4.527a5 5 0 0 0-6.963 1.238l-1.504 2.156c-2.52-1.69-5.333-4.05-8.014-6.732-2.68-2.68-5.04-5.493-6.73-8.013l2.154-1.504a4.96 4.96 0 0 0 2.064-3.225 4.98 4.98 0 0 0-.826-3.739l-4.525-6.478C20.378 10.5 18.85 9.69 17.24 9.69a4.69 4.69 0 0 0-1.628.291 8.97 8.97 0 0 0-1.685.828l-.895.63a6.782 6.782 0 0 0-.63.563c-1.092 1.09-1.866 2.472-2.303 4.104-1.865 6.99 2.754 17.561 11.495 26.301 7.34 7.34 16.157 11.9 23.011 11.9 1.175 0 2.281-.136 3.29-.406 1.633-.436 3.014-1.21 4.105-2.302.199-.199.388-.407.591-.67l.63-.899a9.007 9.007 0 0 0 .798-1.64c.763-2.06-.007-4.41-1.871-5.713z"
+                          data-original="#000000"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-6">
+                  <h3 class="text-lg font-bold text-[#333] mb-6">Shipping Address</h3>
+                  <div class="grid sm:grid-cols-2 gap-6">
+                    <input
+                      id="co-address-line"
+                      name="co-address-line"
+                      type="text"
+                      placeholder="Address Line"
+                      required
+                      class="ina-co-form-input" />
+                    <input
+                      id="co-city"
+                      name="co-city"
+                      type="text"
+                      placeholder="City"
+                      required
+                      class="ina-co-form-input" />
+                    <input
+                      id="co-state"
+                      name="co-state"
+                      type="text"
+                      placeholder="State and/or Country"
+                      required
+                      class="ina-co-form-input" />
+                    <input
+                      id="co-zip-code"
+                      name="co-zip-code"
+                      type="text"
+                      placeholder="Zip Code"
+                      required
+                      class="ina-co-form-input" />
+                  </div>
+                  <div class="mt-6">
+                    <h3 class="text-lg font-bold text-[#333] mb-6">Payment Method</h3>
+                    <div class="md:col-span-2">
+                      <div class="grid gap-6 sm:grid-cols-2">
+                        <div class="flex items-center">
+                          <input type="radio" class="w-5 h-5 cursor-pointer" id="card" checked />
+                          <label for="card" class="ml-4 flex gap-2 cursor-pointer">
+                            <img src="/img/pay-visa.webp" class="w-12" alt="card1" />
+                            <img src="/img/pay-american-express.webp" class="w-12" alt="card2" />
+                            <img src="/img/pay-master.webp" class="w-12" alt="card3" />
+                          </label>
+                        </div>
+                      </div>
+                      <div class="grid sm:grid-cols-4 gap-6 mt-6">
+                        <div class="col-span-2">
+                          <input
+                            id="co-card-number"
+                            name="co-card-number"
+                            type="number"
+                            placeholder="Card number"
+                            class="ina-co-form-input" />
+                        </div>
+                        <input
+                          id="co-card-exp"
+                          name="co-card-exp"
+                          type="number"
+                          placeholder="EXP. (YYMM)"
+                          class="ina-co-form-input" />
+                        <input
+                          id="co-card-cvv"
+                          name="co-card-cvv"
+                          type="number"
+                          placeholder="CVV"
+                          class="ina-co-form-input" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex gap-6 max-sm:flex-col mt-20">
+                    <a href="/home.html" class="ina-btn-white" aria-label="cancel purchase">Cancel</a>
+                    <button id="btn-purchase" type="button" aria-label="complete purchase" class="ina-btn-primary">
+                      Complete Purchase
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="bg-gray-100 py-8 text-center">
+        <p class="text-gray-600">&copy; 2024 Demo App.</p>
+      </footer>
+    </div>
+    <script type="module" src="/main.js"></script>
+    <script type="module">
+      import { cartUpdateDisplay, storeGetUser, storeSaveUser, showToastSync, showModal, addModal } from './main.js';
+      const user = storeGetUser();
+      const token = user?.token;
+
+      // TODO: Remove (or not :P) - helper for demos
+      document.querySelector('#checkout-details h2').addEventListener('click', () => {
+        document.getElementById('co-first-name').value = 'John';
+        document.getElementById('co-last-name').value = 'Demo';
+        document.getElementById('co-email').value = 'demo@demo.com';
+        document.getElementById('co-phone').value = '1234567890';
+        document.getElementById('co-address-line').value = '123 Main St';
+        document.getElementById('co-city').value = 'Anytown';
+        document.getElementById('co-state').value = 'AnyState';
+        document.getElementById('co-zip-code').value = '12345';
+        document.getElementById('co-card-number').value = '1234567890123456';
+        document.getElementById('co-card-exp').value = '1234';
+        document.getElementById('co-card-cvv').value = '123';
+      });
+
+      // Add item to cart table
+      const addItem = (item, numItems) => {
+        const tbody = document.querySelector('tbody');
+        const tr = document.createElement('tr');
+        tr.className = 'text-sm sm:text-base text-gray-600 text-center';
+        tr.dataset.itemid = item.id;
+        tr.innerHTML = `
+          <td class="font-primary font-medium px-4 sm:px-6 py-2 flex items-center gap-4">
+            <img src="${import.meta.env.VITE_BACKEND_BASE_URL}${item.imageUrl}" alt="${item.title}" height="32" width="32" class="hidden sm:inline-flex" />
+            ${item.title}
+          </td>
+          <td class="font-primary font-medium px-4 sm:px-6 py-2">
+              ${numItems}
+          </td>
+          <td class="font-primary text-base font-light px-4 sm:px-6 py-2 hidden sm:table-cell">
+            $<span class="text-base">${item.price}</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      };
+
+      // Update UI based on empty/non-empty cart
+      const updateUI = () => {
+        const emptyDiv = document.getElementById('div-empty');
+        const checkoutDetails = document.getElementById('checkout-details');
+        const tbody = document.querySelector('tbody');
+        if (Array.from(tbody.children).length === 0) {
+          emptyDiv.classList.remove('hidden');
+          checkoutDetails.classList.add('hidden');
+        } else {
+          emptyDiv.classList.add('hidden');
+          checkoutDetails.classList.remove('hidden');
+        }
+      };
+
+      // Populate cart table
+      const cart = user.cart;
+      if (cart && Object.keys(cart).length > 0) {
+        for (let item of Object.values(cart)) {
+          const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/art/${item.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (resp.status !== 200) {
+            console.error(`Failed to fetch item: ${item.id}`);
+            showToastSync(`Failed to fetch item: ${item.id}`, 'error');
+          } else {
+            const itemData = await resp.json();
+            addItem(itemData, item.quantity);
+          }
+        }
+
+        // Pre-checkout
+        const items = [];
+        Object.keys(cart).forEach((key) => {
+          items.push({ id: key, quantity: cart[key].quantity });
+        });
+        const resp2 = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/art/pre-checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ items }),
+        });
+        const { subtotal, taxRate, tax, total } = await resp2.json();
+        // Update amounts
+        document.getElementById('subtotal').innerHTML = subtotal.toFixed(2);
+        document.getElementById('tax-rate').innerHTML = taxRate.toFixed(2);
+        document.getElementById('taxes').innerHTML = tax;
+        document.getElementById('total').innerHTML = total;
+      }
+      updateUI();
+
+      addModal('Just a moment', 'Wait while we verify your purchase.');
+      document.getElementById('btn-purchase').addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const form = document.querySelector('form');
+        if (form.reportValidity()) {
+          // Simulate purchase verification
+          await showModal(5);
+
+          // Continue with the "checkout"
+          const formData = new FormData(form);
+          const data = Object.fromEntries(formData.entries());
+          const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/art/checkout`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              purchase: data,
+              cart: user.cart,
+            }),
+          });
+          if (resp.status !== 200) {
+            console.error('Failed to checkout');
+            const data = await resp.json();
+            showToastSync(data?.message || 'Failed to checkout', 'error');
+          } else {
+            const data = await resp.json();
+            console.log('Purchase completed', data?.message || '');
+            showToastSync('Purchase completed', 'success');
+            // Clear cart
+            storeSaveUser(user.userid, user.token, {});
+            cartUpdateDisplay();
+            window.location.href = '/checkout-done.html';
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/transmit-favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transmit Security Demo</title>
+  </head>
+  <body>
+    <div class="flex flex-col justify-between min-h-screen">
+      <header class="border-b border-palette-lighter sticky top-0 z-20 bg-white">
+        <div class="flex items-center justify-between mx-auto max-w-6xl px-6 pb-2 pt-4 md:pt-6">
+          <a class="cursor-pointer" href="/home.html">
+            <h1 class="no-underline text-2xl xl:text-3xl font-semibold">
+              <span class="bg-indigo-900 text-white font-semibold rounded-full py-1 px-2">AI</span>
+              <span class="text-slate-900">N</span><span class="text-slate-700">F</span
+              ><span class="text-slate-500">T</span>
+              <span class="text-3xl ina-logo text-indigo-600">Art</span>
+            </h1>
+          </a>
+          <div class="flex gap-x-3">
+            <a class="relative" aria-label="cart" href="/cart.html">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                alt="shopping cart"
+                src="/icon-shopcart.svg" />
+              <div
+                id="cart-items"
+                class="hidden absolute top-0 right-0 text-xs bg-yellow-300 text-gray-900 font-semibold rounded-full py-1 px-2 transform translate-x-4 -translate-y-3"></div>
+            </a>
+            <div class="relative inline-block text-left mr-2 cursor-pointer">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                id="profile-icon"
+                alt="profile"
+                src="/icon-profile.svg" />
+            </div>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div class="min-h-screen py-12 sm:pt-20">
+          <div
+            class="flex flex-col justify-center items-center md:flex-row md:items-start space-y-8 md:space-y-0 md:space-x-4 lg:space-x-8 max-w-6xl w-11/12 mx-auto">
+            <div class="w-full md:w-1/2 max-w-md border border-palette-lighter bg-white rounded shadow-lg">
+              <div class="relative h-96">
+                <div
+                  style="
+                    display: block;
+                    overflow: hidden;
+                    position: absolute;
+                    inset: 0px;
+                    box-sizing: border-box;
+                    margin: 0px;
+                  ">
+                  <img
+                    id="item-img"
+                    alt="item"
+                    decoding="async"
+                    class="transform duration-500 ease-in-out hover:scale-105"
+                    style="
+                      position: absolute;
+                      inset: 0px;
+                      box-sizing: border-box;
+                      padding: 0px;
+                      border: medium;
+                      margin: auto;
+                      display: block;
+                      width: 0px;
+                      height: 0px;
+                      min-width: 100%;
+                      max-width: 100%;
+                      min-height: 100%;
+                      max-height: 100%;
+                    " />
+                </div>
+              </div>
+              <div class="flex flex-col border-t border-palette-lighter">
+                <div class="px-3 py-2 font-semibold">
+                  Picture by <span id="item-artist" class="text-palette-primary"></span>
+                </div>
+                <div class="px-3 pb-3">"<span id="item-description" class="text-palette-primary italic"></span>"</div>
+              </div>
+            </div>
+            <div class="flex flex-col justify-between h-full w-full md:w-1/2 max-w-xs mx-auto space-y-4 min-h-128">
+              <a aria-label="back-to-products" class="ina-btn-white" href="/home.html">
+                <img
+                  src="/icon-arrow-left.svg"
+                  alt="back"
+                  class="svg-inline--fa fa-arrow-left fa-w-14 w-4 mr-2 inline-flex" />
+                Back To Collection
+              </a>
+              <div class="font-primary">
+                <h1 id="item-title" class="leading-relaxed font-extrabold text-3xl text-palette-primary py-2 sm:py-4">
+                  item
+                </h1>
+                <p id="item-subtitle" class="font-medium text-lg"></p>
+                <div class="text-xl text-palette-primary font-medium py-4 px-1">
+                  $<span id="item-price" class="text-2xl"></span>
+                </div>
+              </div>
+              <div class="w-full">
+                <div class="flex justify-start space-x-2 w-full">
+                  <div class="flex flex-col items-start space-y-1 flex-grow-0">
+                    <label class="text-gray-500 text-base"
+                      >Qty.
+                      <input
+                        type="number"
+                        inputmode="numeric"
+                        id="quantity"
+                        name="quantity"
+                        min="1"
+                        step="1"
+                        class="text-gray-900 form-input border border-gray-300 w-16 rounded-sm focus:border-palette-light focus:ring-palette-light"
+                        value="1" />
+                    </label>
+                  </div>
+                  <div class="flex flex-col items-start space-y-1 flex-grow">
+                    <label class="text-gray-500 text-base"
+                      >Purchase type
+                      <select
+                        id="size-selector"
+                        name="size-selector"
+                        class="form-select border border-gray-300 rounded-sm w-full text-gray-900 focus:border-palette-light focus:ring-palette-light">
+                        <option id="1" value="exclusive">exclusive (forever)</option>
+                        <option id="2" value="shared" disabled>shared (forever)</option>
+                        <option id="3" value="1year" disabled>1 year</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <button
+                  id="cart-button"
+                  class="pt-3 pb-2 text-white w-full mt-4 rounded-sm font-primary font-semibold text-xl flex justify-center items-baseline hover:bg-palette-dark ina-btn-primary"
+                  aria-label="cart-button">
+                  Add To Cart
+                  <img
+                    src="/icon-shopcart.svg"
+                    alt="shopping cart"
+                    class="ina-icon-white svg-inline--fa fa-shopping-cart fa-w-18 w-5 ml-2 ina-icon-white" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="bg-gray-100 py-8 text-center">
+        <p class="text-gray-600">&copy; 2024 Demo App.</p>
+      </footer>
+    </div>
+    <script type="module" src="/main.js"></script>
+    <script type="module">
+      import { storeGetUser, storeAddToCart, cartUpdateDisplay, showToastSync } from './main.js';
+
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('item');
+
+      const user = storeGetUser();
+      const token = user?.token;
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/art/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (resp.status === 200) {
+          const data = await resp.json();
+          const itemImg = document.getElementById('item-img');
+          itemImg.alt = data.title;
+          itemImg.src = `${import.meta.env.VITE_BACKEND_BASE_URL}${data.imageUrl}`;
+          document.getElementById('item-artist').innerText = data.artist || 'Unknown';
+          document.getElementById('item-description').innerText = data.description || 'No description';
+          document.getElementById('item-title').innerText = data.title;
+          document.getElementById('item-subtitle').innerText = data.subtitle;
+          document.getElementById('item-price').innerText = data.price;
+        } else {
+          console.error('Failed to fetch data');
+          window.location.href = '/not-found.html';
+        }
+      } catch (error) {
+        console.error(error);
+        window.location.href = '/error.html';
+      }
+
+      // Events
+      document.getElementById('cart-button').addEventListener('click', (e) => {
+        e.preventDefault();
+        showToastSync('Item added to cart', 'success', 1500);
+        storeAddToCart({
+          id,
+          quantity: Number(document.getElementById('quantity').value),
+          size: document.getElementById('size-selector').value,
+          price: Number(document.getElementById('item-price').innerText),
+        });
+        // Update icon in header to show num of elements in cart
+        cartUpdateDisplay();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/transmit-favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transmit Security Demo</title>
+  </head>
+  <body>
+    <div class="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
+      <div class="max-w-screen-xl m-0 sm:m-10 bg-white shadow sm:rounded-lg flex justify-center flex-1">
+        <div class="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
+          <h1 class="text-2xl xl:text-3xl font-semibold">
+            <span class="bg-indigo-900 text-white font-semibold rounded-full py-1 px-2">AI</span>
+            <span class="text-slate-900">N</span><span class="text-slate-700">F</span
+            ><span class="text-slate-500">T</span>
+            <span class="text-3xl ina-logo text-indigo-600">Art</span>
+          </h1>
+          <div class="mt-12 flex flex-col items-center">
+            <h2 class="ina-title mb-8">Sign up</h2>
+            <div class="w-full flex-1">
+              <!-- TODO: Add social login
+              <div class="flex flex-col items-center">
+                <button class="ina-btn-secondary">
+                  <div class="bg-white p-2 rounded-full">
+                    <img class="w-4" src="/icon-google.svg" alt="Sign up with Google" />
+                  </div>
+                  <span class="ml-4"> Sign Up with Google </span>
+                </button>
+              </div>
+
+              <div class="my-12 border-b text-center">
+                <div class="ina-div-hr">Or sign up with e-mail &amp; password</div>
+              </div>
+              -->
+
+              <div class="mx-auto max-w-xs">
+                <input class="ina-inp-txt-primary" type="email" placeholder="Email" />
+                <input class="ina-inp-txt-primary mt-5" type="password" placeholder="Password" />
+                <button id="btn-signup" class="ina-btn-primary mt-5">
+                  <svg
+                    class="w-6 h-6 -ml-2"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                    <path d="M20 8v6M23 11h-6" />
+                  </svg>
+                  <span class="ml-3"> Sign Up </span>
+                  <img src="/icon-fingerprint.svg" class="hidden ml-3 w-6 h-6" alt="Sign up with biometrics" />
+                </button>
+
+                <div class="mt-3 text-center text-sm text-gray-600">
+                  Have an account already? <a href="/index.html" class="ina-a-primary">Sign in</a>
+                </div>
+
+                <p class="mt-6 text-xs text-gray-600 text-center">
+                  Read
+                  <a href="#" class="ina-txt-underlined">Terms of Service</a>
+                  and
+                  <a href="#" class="ina-txt-underlined">Privacy Policy</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 bg-indigo-100 text-center hidden lg:flex">
+          <div
+            class="m-12 xl:m-16 w-full bg-contain bg-center bg-no-repeat"
+            style="background-image: url('/img/hero-2.jpeg')"></div>
+        </div>
+      </div>
+    </div>
+    <footer class="bg-gray-100 py-8 text-center">
+      <p class="text-gray-600">&copy; 2024 Demo App.</p>
+    </footer>
+
+    <script type="module" src="/main.js"></script>
+    <script type="module">
+      import { storeSaveUser, showToastSync } from './main.js';
+
+      const btnSignup = document.getElementById('btn-signup');
+      btnSignup.addEventListener('click', signUpWithPassword);
+
+      /**
+       * Registers a user with email and password
+       */
+      async function signUpWithPassword() {
+        const email = document.querySelector('input[type="email"]').value;
+        const password = document.querySelector('input[type="password"]').value;
+        if (!email || !password) {
+          showToastSync('Please enter email and password', 'warning');
+          return;
+        }
+        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+        if (resp.status !== 200) {
+          console.error('Failed to register');
+          const error = await resp.json();
+          showToastSync(error.message || 'Registration failed', 'warning');
+          return;
+        }
+
+        const data = await resp.json();
+        storeSaveUser(email, data.token);
+        window.location.href = '/home.html';
+      }
+    </script>
+  </body>
+</html>

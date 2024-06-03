@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/transmit-favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transmit Security Demo</title>
+  </head>
+
+  <body>
+    <div class="flex flex-col justify-between min-h-screen">
+      <header class="border-b border-palette-lighter sticky top-0 z-20 bg-white">
+        <div class="flex items-center justify-between mx-auto max-w-6xl px-6 pb-2 pt-4 md:pt-6">
+          <a class="cursor-pointer" href="/home.html">
+            <h1 class="no-underline text-2xl xl:text-3xl font-semibold">
+              <span class="bg-indigo-900 text-white font-semibold rounded-full py-1 px-2">AI</span>
+              <span class="text-slate-900">N</span><span class="text-slate-700">F</span
+              ><span class="text-slate-500">T</span>
+              <span class="text-3xl ina-logo text-indigo-600">Art</span>
+            </h1>
+          </a>
+          <div class="flex gap-x-3">
+            <a class="relative" aria-label="cart" href="/cart.html">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                alt="shopping cart"
+                src="/icon-shopcart.svg" />
+              <div
+                id="cart-items"
+                class="hidden absolute top-0 right-0 text-xs bg-yellow-300 text-gray-900 font-semibold rounded-full py-1 px-2 transform translate-x-4 -translate-y-3"></div>
+            </a>
+            <div class="relative inline-block text-left mr-2 cursor-pointer">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                id="profile-icon"
+                alt="profile"
+                src="/icon-profile.svg" />
+            </div>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div class="container mx-auto mb-20 min-h-screen">
+          <h1
+            class="leading-relaxed font-primary font-extrabold text-4xl text-center text-palette-primary mt-4 py-2 sm:py-4">
+            Your Cart
+          </h1>
+          <div class="min-h-80 max-w-2xl my-4 sm:my-8 mx-auto w-full">
+            <table class="mx-auto">
+              <thead>
+                <tr class="uppercase text-xs sm:text-sm text-palette-primary border-b border-palette-light">
+                  <th class="font-primary font-normal px-6 py-4">Product</th>
+                  <th class="font-primary font-normal px-6 py-4">Quantity</th>
+                  <th class="font-primary font-normal px-6 py-4 hidden sm:table-cell">Price</th>
+                  <th class="font-primary font-normal px-6 py-4">Remove</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-palette-lighter"></tbody>
+              <tfoot class="border-t border-palette-light">
+                <tr class="text-center">
+                  <td></td>
+                  <td class="font-primary text-base text-gray-600 font-semibold uppercase px-4 sm:px-6 py-4">
+                    Subtotal
+                  </td>
+                  <td class="font-primary text-lg text-palette-primary font-medium px-4 sm:px-6 py-4">
+                    $<span id="subtotal" class="text-xl">0.00</span>
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+            <div id="div-empty" class="hidden flex justify-center max-w-sm mx-auto space-y-4 px-2">
+              <img src="/img/empty-cart.jpeg" alt="cart is empty" class="w-64" />
+            </div>
+          </div>
+          <div class="max-w-sm mx-auto space-y-4 px-2">
+            <a id="checkout-btn" href="/checkout.html" aria-label="checkout-products" class="ina-btn-primary">
+              Check Out
+              <img
+                src="/icon-arrow-right.svg"
+                alt="checkout"
+                class="ina-icon-white svg-inline--fa fa-arrow-right fa-w-14 w-4 ml-2 inline-flex text-white" />
+            </a>
+            <a aria-label="back-to-products" class="ina-btn-white" href="/home.html">
+              <img
+                src="/icon-arrow-left.svg"
+                alt="back"
+                class="svg-inline--fa fa-arrow-left fa-w-14 w-4 mr-2 inline-flex" />
+              Back To Collection
+            </a>
+          </div>
+        </div>
+      </main>
+      <footer class="bg-gray-100 py-8 text-center">
+        <p class="text-gray-600">&copy; 2024 Demo App.</p>
+      </footer>
+    </div>
+    <script type="module" src="/main.js"></script>
+    <script type="module">
+      import {
+        storeGetUser,
+        showToastSync,
+        storeRemoveFromCart,
+        storeUpdateQuantity,
+        storeCalculateSubtotal,
+      } from './main.js';
+      const user = storeGetUser();
+      const token = user?.token;
+
+      // Add item to cart table
+      const addItem = (item, numItems) => {
+        const tbody = document.querySelector('tbody');
+        const tr = document.createElement('tr');
+        tr.className = 'text-sm sm:text-base text-gray-600 text-center';
+        tr.dataset.itemid = item.id;
+        tr.innerHTML = `
+          <td class="font-primary font-medium px-4 sm:px-6 py-4 flex items-center gap-4">
+            <img src="${import.meta.env.VITE_BACKEND_BASE_URL}${item.imageUrl}" alt="${item.title}" height="64" width="64" class="hidden sm:inline-flex" />
+            <a class="pt-1 hover:text-palette-dark" href="/product.html?item=${item.id}">${item.title}</a>
+          </td>
+          <td class="font-primary font-medium px-4 sm:px-6 py-4">
+            <input type="number" inputmode="numeric" id="variant-quantity" name="variant-quantity" min="1" step="1"
+              class="text-gray-900 form-input border border-gray-300 w-16 rounded-sm focus:border-palette-light focus:ring-palette-light"
+              value="${numItems}" />
+          </td>
+          <td class="font-primary text-base font-light px-4 sm:px-6 py-4 hidden sm:table-cell">
+            $<span class="text-lg">${item.price}</span>
+          </td>
+          <td class="font-primary font-medium px-4 sm:px-6 py-4">
+            <button aria-label="delete-item" class="delete-item">
+              <img src="/icon-remove.svg" alt="remove item" 
+                class="svg-inline--fa fa-times fa-w-11 w-8 h-8 text-palette-primary border border-palette-primary p-1 hover:bg-palette-lighter"/>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      };
+
+      // Update UI based on empty/non-empty cart
+      const updateUI = () => {
+        const emptyDiv = document.getElementById('div-empty');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const tbody = document.querySelector('tbody');
+        if (Array.from(tbody.children).length === 0) {
+          emptyDiv.classList.remove('hidden');
+          checkoutBtn.classList.add('hidden');
+        } else {
+          emptyDiv.classList.add('hidden');
+          checkoutBtn.classList.remove('hidden');
+        }
+      };
+
+      // Populate cart table
+      const cart = user.cart;
+      if (cart && Object.keys(cart).length > 0) {
+        let subtotal = 0;
+        for (let item of Object.values(cart)) {
+          const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/art/${item.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (resp.status !== 200) {
+            console.error(`Failed to fetch item: ${item.id}`);
+            showToastSync(`Failed to fetch item: ${item.id}`, 'error');
+          } else {
+            const itemData = await resp.json();
+            addItem(itemData, item.quantity);
+            subtotal += Number(itemData.price) * item.quantity;
+          }
+        }
+
+        // Update subtotal
+        document.getElementById('subtotal').innerHTML = subtotal.toFixed(2);
+
+        // Add event listeners to delete items
+        Array.from(document.getElementsByClassName('delete-item')).forEach((button) => {
+          button.addEventListener('click', async (event) => {
+            const tr = event.target.closest('tr');
+            const itemId = tr.dataset.itemid;
+            tr.remove();
+            storeRemoveFromCart(itemId);
+            document.getElementById('subtotal').innerHTML = storeCalculateSubtotal().toFixed(2);
+            updateUI();
+          });
+        });
+
+        // Add event listener to update quantity
+        Array.from(document.querySelectorAll('input[name="variant-quantity"]')).forEach((input) => {
+          input.addEventListener('change', (event) => {
+            const tr = event.target.closest('tr');
+            const itemId = tr.dataset.itemid;
+            const itemQuantity = Number(event.target.value);
+            storeUpdateQuantity(itemId, itemQuantity);
+            // Update subtotal
+            document.getElementById('subtotal').innerHTML = storeCalculateSubtotal().toFixed(2);
+            updateUI();
+          });
+        });
+      }
+      updateUI();
+    </script>
+  </body>
+</html>

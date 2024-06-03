@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/transmit-favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transmit Security Demo</title>
+  </head>
+
+  <body>
+    <div class="flex flex-col justify-between min-h-screen">
+      <header class="border-b border-palette-lighter sticky top-0 z-20 bg-white">
+        <div class="flex items-center justify-between mx-auto max-w-6xl px-6 pb-2 pt-4 md:pt-6">
+          <a class="cursor-pointer" href="/home.html">
+            <h1 class="no-underline text-2xl xl:text-3xl font-semibold">
+              <span class="bg-indigo-900 text-white font-semibold rounded-full py-1 px-2">AI</span>
+              <span class="text-slate-900">N</span><span class="text-slate-700">F</span
+              ><span class="text-slate-500">T</span>
+              <span class="text-3xl ina-logo text-indigo-600">Art</span>
+            </h1>
+          </a>
+          <div class="flex gap-x-3">
+            <a class="relative" aria-label="cart" href="/cart.html">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                alt="shopping cart"
+                src="/icon-shopcart.svg" />
+              <div
+                id="cart-items"
+                class="hidden absolute top-0 right-0 text-xs bg-yellow-300 text-gray-900 font-semibold rounded-full py-1 px-2 transform translate-x-4 -translate-y-3"></div>
+            </a>
+            <div class="relative inline-block text-left mr-2 cursor-pointer">
+              <img
+                class="svg-inline--fa fa-shopping-cart fa-w-18 text-palette-primary w-6 m-auto"
+                id="profile-icon"
+                alt="profile"
+                src="/icon-profile.svg" />
+            </div>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div class="container mx-auto mb-20 min-h-screen">
+          <h1
+            class="leading-relaxed font-primary font-extrabold text-4xl text-center text-palette-primary mt-2 py-2 sm:py-4">
+            Page Not Found
+          </h1>
+          <div class="min-h-80 max-w-2xl mt-4 sm:mt-8 mx-auto w-full">
+            <div id="div-empty" class="flex flex-col items-center justify-center max-w-sm mx-auto space-y-4 px-2">
+              <img src="/img/404.jpeg" alt="cart is empty" class="w-80 mb-4" />
+              <span class="text-xl text-center font-bold text-[#333] pb-4 pl-6">
+                We live in a world of infinite possibilities, but this page is not one of them.
+              </span>
+
+              <a aria-label="back-to-products" class="ina-btn-white" href="/home.html">
+                <img
+                  src="/icon-arrow-left.svg"
+                  alt="back"
+                  class="svg-inline--fa fa-arrow-left fa-w-14 w-4 mr-2 inline-flex" />
+                Back To Home
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="bg-gray-100 py-8 text-center">
+        <p class="text-gray-600">&copy; 2024 Demo App.</p>
+      </footer>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

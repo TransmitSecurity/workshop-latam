@@ -1,0 +1,25 @@
+{
+  "name": "@tswebinar",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "webinar-server",
+    "webinar-vanilla-js"
+  ],
+  "scripts": {
+    "start": "concurrently \"npm run start:server\" \"npm run start:vanilla\"",
+    "start:server": "npm start --workspace webinar-server ",
+    "start:vanilla": "npm start --workspace webinar-vanilla-js"
+  },
+  "keywords": [
+    "transmitsecurity",
+    "passwordless",
+    "passkeys"
+  ],
+  "author": "angel.nogueras@transmitsecurity.com",
+  "license": "ISC",
+  "description": "Experience the future of authentication with our demo web application! Say goodbye to passwords and hello to a seamless and secure login experience moving from traditional password-based authentication to the cutting-edge world of passwordless technology. Discover the simplicity, convenience, and heightened security of passwordless non-phisheable authentication with this easy demo application",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
