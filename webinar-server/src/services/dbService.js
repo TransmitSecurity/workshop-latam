@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { JSONFilePreset } from 'lowdb/node';
-import { bcryptHashSync } from '../helpers/cryptoHelper.js';
 
 const DB_DIR = './src/db';
 const DB_FILENAME = 'database.json';
@@ -17,7 +16,7 @@ if (db.data.users.length === 0) {
     users: [
       {
         userid: 'demo@demo.com',
-        password: await bcryptHashSync('demo'),
+        password: '$2b$10$vAHod8dMNe/Dqb74gRfGe.f1rSp2ee7.eXDPcnlIq/dwHzWNxj5ke', // "demo"
       },
     ],
   };

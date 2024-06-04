@@ -35,7 +35,7 @@
               -->
 
               <div class="mx-auto max-w-xs">
-                <input class="ina-inp-txt-primary" type="email" placeholder="Email" />
+                <input class="ina-inp-txt-primary" autocomplete="username webauthn" type="email" placeholder="Email" />
                 <input class="ina-inp-txt-primary mt-5" type="password" placeholder="Password" />
                 <button id="btn-login" class="ina-btn-primary mt-5">
                   <svg
@@ -81,17 +81,131 @@
     <script type="module">
       import { showToastSync, storeSaveUser } from './main.js';
 
+      const btnLogin = document.getElementById('btn-login');
+      btnLogin.addEventListener('click', loginWithPassword);
+
+      /**
+       * Initialize SDK and make required changes in the UI for passwordless
+       */
+      const letsGoPasswordless = async () => {
+        // Initialize and configure the SDK with your client.
+        try {
+          await window.tsPlatform.initialize({
+            clientId: import.meta.env.VITE_TS_CLIENT_ID,
+            webauthn: { serverPath: import.meta.env.VITE_TS_BASE_URL },
+          });
+          console.log('TS Platform SDK initialized');
+
+          // Check if biometrics is supported
+          const isBiometricsSupported = await window.tsPlatform.webauthn.isPlatformAuthenticatorSupported();
+          console.log('isBiometricsSupported', isBiometricsSupported);
+          if (isBiometricsSupported) {
+            btnLogin.removeEventListener('click', loginWithPassword);
+            // Remove password input and add biometrics
+            document.querySelector('input[type="password"]').classList.add('hidden');
+            btnLogin.getElementsByTagName('img')[0].classList.remove('hidden');
+            // Add Passkey registration logic to the button
+            btnLogin.addEventListener('click', loginWithPasskeyModal);
+
+            // Start autofill/conditionalUI
+            initPasskeyAutofill();
+          }
+        } catch (error) {
+          console.error('Failed to initialize TS Platform SDK', error);
+          showToastSync('Failed to initialize TS Platform SDK', 'error');
+        }
+      };
+      // Initialize the SDK once it's loaded
+      document.getElementById('ts-platform-script').addEventListener('load', () => {
+        letsGoPasswordless();
+      });
+
       // TODO: Remove (or not :P) - helper for demos
       document.querySelector('h2').addEventListener('click', () => {
         document.querySelector('input[type="email"]').value = 'demo@demo.com';
         document.querySelector('input[type="password"]').value = 'demo';
       });
 
-      const btnLogin = document.getElementById('btn-login');
-      btnLogin.addEventListener('click', loginWithPassword);
+      /**
+       * Login with passkey
+       */
+      async function loginWithPasskeyModal() {
+        const email = document.querySelector('input[type="email"]').value;
+        if (!email) {
+          showToastSync('Please enter email', 'warning');
+          return;
+        }
+
+        // Abort autofill first
+        await window.tsPlatform.webauthn.authenticate.autofill.abort();
+        try {
+          const webauthn_encoded_result = await window.tsPlatform.webauthn.authenticate.modal(email); // Optional username
+          await completePasskeyLogin(webauthn_encoded_result, email);
+        } catch (error) {
+          console.error(error);
+          showToastSync('Invalid user or passkey', 'warning');
+          // Re-start autofill/conditionalUI
+          initPasskeyAutofill();
+        }
+      }
 
       /**
-       * Logs in a user with email and password
+       * Enable passkey autofill
+       */
+      async function initPasskeyAutofill() {
+        // Start autofill/conditionalUI if supported
+        const isAutofillSupported = await window.tsPlatform.webauthn.isAutofillSupported();
+        if (!isAutofillSupported) {
+          console.log('Autofill not supported');
+          return;
+        }
+
+        await window.tsPlatform.webauthn.authenticate.autofill.activate({
+          onSuccess: async (webauthn_encoded_result) => {
+            try {
+              await completePasskeyLogin(webauthn_encoded_result);
+            } catch (error) {
+              console.error(error);
+              showToastSync("Sorry, couldn't sign you in", 'warning');
+            }
+          },
+          onError: (error) => {
+            console.log('Passkey autofill error: ', error);
+            if (error.errorCode !== 'autofill_authentication_aborted') {
+              // The user doesn't exists or cannot login, redirect to register
+              console.log("User doesn't exist. Sign up first");
+              showToastSync("User doesn't exist. Sign up first", 'warning');
+            }
+          },
+        });
+      }
+
+      /**
+       * Complete login with passkey
+       * @param {string} webauthnEncodedResult Encoded result from the SDK
+       * @param {string} email User email
+       */
+      async function completePasskeyLogin(webauthnEncodedResult, email) {
+        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/webauthn/auth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: email, webauthnEncodedResult }),
+        });
+        if (resp.status !== 200) {
+          console.error('Failed to login with passkey');
+          showToastSync('Invalid user or passkey', 'warning');
+          return;
+        }
+
+        const data = await resp.json();
+        storeSaveUser(data.email, data.token);
+        window.location.href = '/home.html';
+      }
+
+      /**
+       * Login with email and password
        */
       async function loginWithPassword() {
         const email = document.querySelector('input[type="email"]').value;
@@ -118,5 +232,11 @@
         window.location.href = '/home.html';
       }
     </script>
+
+    <!-- This loads the latest SDK within the major version 1. -->
+    <script
+      src="https://platform-websdk.transmitsecurity.io/platform-websdk/1.x/ts-platform-websdk.js"
+      defer="true"
+      id="ts-platform-script"></script>
   </body>
 </html>
