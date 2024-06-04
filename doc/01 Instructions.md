@@ -36,6 +36,12 @@ TS_CLIENT_SECRET=<your_transmit_app_client_secret>
 VITE_TS_BASE_URL=https://api.transmitsecurity.io/cis
 ```
 
+Restart the application so that it gets the new values in `.env`
+```Bash
+<Ctrl>+C
+npm start
+```
+
 Include Transmit SDK and initialize it in login and sign-up pages (`index.html` and `sign-up.html` respectively), located in `webinar-vanilla-js/src` folder.
 
 Edit `index.html` and `sign-up.html` and include the sdk script at the bottom of the page, just before `</body>`.
