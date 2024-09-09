@@ -80,7 +80,7 @@
 
     <script type="module" src="/main.js"></script>
     <script type="module">
-      import { storeSaveUser, showToastSync } from './main.js';
+      import { checkFlag, loadAndInitTsSdk, storeSaveUser, showToastSync, RISK_ACTIONS } from './main.js';
 
       const btnSignup = document.getElementById('btn-signup');
       btnSignup.addEventListener('click', signUpWithPassword);
@@ -89,14 +89,7 @@
        * Initialize SDK and make required changes in the UI for passwordless
        */
       const letsGoPasswordless = async () => {
-        // Initialize and configure the SDK with your client.
         try {
-          await window.tsPlatform.initialize({
-            clientId: import.meta.env.VITE_TS_CLIENT_ID,
-            webauthn: { serverPath: import.meta.env.VITE_TS_BASE_URL },
-          });
-          console.log('TS Platform SDK initialized');
-
           // Check if biometrics is supported
           const isBiometricsSupported = await window.tsPlatform.webauthn.isPlatformAuthenticatorSupported();
           console.log('isBiometricsSupported', isBiometricsSupported);
@@ -113,10 +106,12 @@
           showToastSync('Failed to initialize TS Platform SDK', 'error');
         }
       };
-      // Initialize the SDK once it's loaded
-      document.getElementById('ts-platform-script').addEventListener('load', () => {
-        letsGoPasswordless();
-      });
+      // Load and Initialize the SDK once it's loaded
+      if (checkFlag('VITE_FLAG_DISABLE_PASSKEYS')) {
+        loadAndInitTsSdk();
+      } else {
+        loadAndInitTsSdk(letsGoPasswordless);
+      }
 
       /**
        * Registers a user with a passkey
@@ -127,6 +122,10 @@
           showToastSync('Please enter email', 'warning');
           return;
         }
+
+        // Trigger action event
+        const actionResponse = await window.tsPlatform.drs.triggerActionEvent(RISK_ACTIONS.REGISTER);
+
         // Registers WebAuthn credentials on the device and returns an encoded result
         // that should be passed to your backend to complete the registration flow
         const encodedResult = await window.tsPlatform.webauthn.register(email);
@@ -138,6 +137,7 @@
           body: JSON.stringify({
             webauthnEncodedResult: encodedResult,
             userId: email,
+            actionToken: actionResponse.actionToken,
           }),
         });
         if (resp.status !== 200) {
@@ -162,12 +162,16 @@
           showToastSync('Please enter email and password', 'warning');
           return;
         }
+
+        // Trigger action event
+        const actionResponse = await window.tsPlatform.drs.triggerActionEvent(RISK_ACTIONS.REGISTER);
+
         const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, actionToken: actionResponse.actionToken }),
         });
         if (resp.status !== 200) {
           console.error('Failed to register');
@@ -181,11 +185,5 @@
         window.location.href = '/home.html';
       }
     </script>
-
-    <!-- This loads the latest SDK within the major version 1. -->
-    <script
-      src="https://platform-websdk.transmitsecurity.io/platform-websdk/latest/ts-platform-websdk.js"
-      defer="true"
-      id="ts-platform-script"></script>
   </body>
 </html>

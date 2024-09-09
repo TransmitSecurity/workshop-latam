@@ -4,6 +4,7 @@ import passkeysController from '../controllers/passkeysController.js';
 import { authMiddleware } from '../helpers/middlewares.js';
 import riskController from '../controllers/riskController.js';
 import dbService from '../services/dbService.js';
+import { REPORT_RESULTS } from '../helpers/constants.js';
 
 const defaultRouter = express.Router();
 
@@ -13,24 +14,52 @@ defaultRouter.get('/', (_req, res) => {
 
 // The auth endpoint that logs a user based on an existing record
 defaultRouter.post('/auth', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, actionToken } = req.body;
   if (!email || !password) return res.status(400).json({ message: 'Invalid request' });
   try {
+    // Manage risk recommendation for login
+    const recommendation = await riskController.manageRiskLogin(actionToken);
+
+    // Authenticate user with email and password
     const token = await defaultCtlr.auth(email, password);
+
+    // Report the action result
+    await riskController.reportLoginPasswordActionResult(actionToken, REPORT_RESULTS.SUCCESS, email);
+
+    // Store the recommendation in the database
+    await dbService.saveLastRiskRecommendation(email, recommendation);
+
     return res.status(200).json({ message: 'success', token });
   } catch (error) {
+    // Report the action result
+    await riskController.reportLoginPasswordActionResult(actionToken, REPORT_RESULTS.FAILURE, email);
+
     return res.status(401).json({ message: error.message });
   }
 });
 
 // The register endpoint that creates a new user record
 defaultRouter.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, actionToken } = req.body;
   if (!email || !password) return res.status(400).json({ message: 'Invalid request' });
   try {
+    // Manage risk recommendation for registration
+    const recommendation = await riskController.manageRiskRegistration(actionToken);
+
+    // Register the user with email and password
     const token = await defaultCtlr.register(email, password);
+
+    // Report the action result
+    await riskController.reportSignUpPasswordActionResult(actionToken, REPORT_RESULTS.SUCCESS, email);
+
+    // Store the recommendation in the database
+    await dbService.saveLastRiskRecommendation(email, recommendation);
+
     return res.status(200).json({ message: 'success', token });
   } catch (error) {
+    // Report the action result
+    await riskController.reportSignUpPasswordActionResult(actionToken, REPORT_RESULTS.FAILURE, email);
+
     return res.status(401).json({ message: error.message });
   }
 });
@@ -45,23 +74,43 @@ defaultRouter.post('/webauthn/auth', async (req, res) => {
     // Authenticate the user with the passkey
     const { token, userid } = await passkeysController.authUserPasskey(webauthnEncodedResult, userId);
 
+    // Report the action result
+    await riskController.reportLoginPasskeyActionResult(actionToken, REPORT_RESULTS.SUCCESS, userid);
+
     // Store the recommendation in the database
     await dbService.saveLastRiskRecommendation(userid, recommendation);
 
     return res.status(200).json({ message: 'success', token, email: userid });
   } catch (error) {
+    // Report the action result
+    await riskController.reportLoginPasskeyActionResult(actionToken, REPORT_RESULTS.FAILURE, userId);
+
     return res.status(401).json({ message: error.message });
   }
 });
 
 // The register-passkeys endpoint that registers a new passkey
 defaultRouter.post('/webauthn/register', async (req, res) => {
-  const { webauthnEncodedResult, userId } = req.body;
+  const { webauthnEncodedResult, actionToken, userId } = req.body;
   if (!webauthnEncodedResult || !userId) return res.status(400).json({ message: 'Invalid request' });
   try {
+    // Manage risk recommendation for registration
+    const recommendation = await riskController.manageRiskRegistration(actionToken);
+
+    // Register the user with the passkey
     const token = await passkeysController.registerUserPasskey(webauthnEncodedResult, userId);
+
+    // Report the action result
+    await riskController.reportSignUpPasskeyActionResult(actionToken, REPORT_RESULTS.SUCCESS, userId);
+
+    // Store the recommendation in the database
+    await dbService.saveLastRiskRecommendation(userId, recommendation);
+
     return res.status(200).json({ message: 'success', token });
   } catch (error) {
+    // Report the action result
+    await riskController.reportSignUpPasskeyActionResult(actionToken, REPORT_RESULTS.FAILURE, userId);
+
     return res.status(401).json({ message: error.message });
   }
 });
