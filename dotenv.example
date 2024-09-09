@@ -1,6 +1,4 @@
 #SCHEMA=http
-FE_REACT_PORT=3000
-FE_REACT_HOST=localhost
 FE_JS_PORT=3001
 FE_JS_HOST=localhost
 
@@ -16,4 +14,4 @@ JWT_TYPE=Bearer
 ### Transmit configuration ###
 VITE_TS_CLIENT_ID=<your_transmit_app_client_id>
 TS_CLIENT_SECRET=<your_transmit_app_client_secret>
-VITE_TS_BASE_URL=https://api.transmitsecurity.io/cis
+VITE_TS_BASE_URL=https://api.transmitsecurity.io
