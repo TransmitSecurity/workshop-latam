@@ -2,20 +2,23 @@ import jwt from 'jsonwebtoken';
 import jwkToPem from 'jwk-to-pem';
 import {
   ERROR_CLIENT_ACCESS_TOKEN,
+  ERROR_RISK_GET_RECOMMENDATION,
   ERROR_PASSKEY_AUTHENTICATION,
   ERROR_PASSKEY_REGISTRATION,
 } from '../helpers/constants.js';
 
 /**
  * Get ClientAccessToken using client credentials flow
+ * @param {String} resource Target Resource for the ClientAccessToken (optional)
  * @returns client access_token
  */
-export const getClientAccessToken = async () => {
+export const getClientAccessToken = async (resource) => {
   const formData = {
     client_id: process.env.VITE_TS_CLIENT_ID,
     client_secret: process.env.TS_CLIENT_SECRET,
     grant_type: 'client_credentials',
   };
+  if (resource) formData.resource = resource;
 
   try {
     const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/oidc/token`, {
@@ -32,6 +35,17 @@ export const getClientAccessToken = async () => {
     console.error(`${ERROR_CLIENT_ACCESS_TOKEN}: ${error.message}`);
     throw new Error(ERROR_CLIENT_ACCESS_TOKEN);
   }
+};
+
+/** Target Resource for DRS Client Access Token */
+const DRS_RESOURCE = 'https://risk.identity.security';
+
+/**
+ * Get DRS ClientAccessToken using client credentials flow
+ * @returns client access_token
+ */
+export const getDRSClientAccessToken = async () => {
+  return getClientAccessToken(DRS_RESOURCE);
 };
 
 /**
@@ -119,4 +133,29 @@ export const validateToken = async (token) => {
   const publicKey = jwkToPem(key);
 
   return jwt.verify(token, publicKey);
+};
+
+/**
+ * Fetch DRS recommendation
+ * @param {String} actionToken Obtained from the SDK
+ * @param {String} riskClientAccessToken  ClientAccessToken for the DRS API
+ */
+export const getDRSRecommendation = async (actionToken, riskClientAccessToken) => {
+  try {
+    const query = new URLSearchParams({ action_token: actionToken }).toString();
+
+    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/risk/v1/recommendation?${query}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${riskClientAccessToken}`,
+      },
+    });
+
+    const data = await resp.json();
+    //console.log(`DRS Recommendation: ${JSON.stringify(data, null, 2)}`);
+    return data;
+  } catch (error) {
+    console.error(`${ERROR_RISK_GET_RECOMMENDATION}: ${error.message}`);
+    throw new Error(ERROR_RISK_GET_RECOMMENDATION);
+  }
 };

@@ -47,6 +47,12 @@ const addPurchase = async (userid, purchase) => {
   await db.write();
 };
 
+const saveLastRiskRecommendation = async (userid, recommendation) => {
+  const user = db.data.users.find((u) => u.userid === userid);
+  user.lastRiskRecommendation = recommendation;
+  await db.write();
+};
+
 // eslint-disable-next-line
 const resetDB = async () => {
   db.data = defaultData;
@@ -58,5 +64,6 @@ const dbService = {
   addUser,
   deleteUser,
   addPurchase,
+  saveLastRiskRecommendation,
 };
 export default dbService;

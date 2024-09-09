@@ -2,6 +2,8 @@ import express from 'express';
 import defaultCtlr from '../controllers/defaultController.js';
 import passkeysController from '../controllers/passkeysController.js';
 import { authMiddleware } from '../helpers/middlewares.js';
+import riskController from '../controllers/riskController.js';
+import dbService from '../services/dbService.js';
 
 const defaultRouter = express.Router();
 
@@ -35,10 +37,17 @@ defaultRouter.post('/register', async (req, res) => {
 
 // The auth-passkeys endpoint that authenticates a passkey
 defaultRouter.post('/webauthn/auth', async (req, res) => {
-  const { webauthnEncodedResult, userId } = req.body;
+  const { webauthnEncodedResult, actionToken, userId } = req.body;
   if (!webauthnEncodedResult) return res.status(400).json({ message: 'Invalid request' });
   try {
+    // Manage risk recommendation for login
+    const recommendation = await riskController.manageRiskLogin(actionToken);
+    // Authenticate the user with the passkey
     const { token, userid } = await passkeysController.authUserPasskey(webauthnEncodedResult, userId);
+
+    // Store the recommendation in the database
+    await dbService.saveLastRiskRecommendation(userid, recommendation);
+
     return res.status(200).json({ message: 'success', token, email: userid });
   } catch (error) {
     return res.status(401).json({ message: error.message });

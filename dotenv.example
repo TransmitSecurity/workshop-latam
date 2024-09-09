@@ -1,4 +1,6 @@
 #SCHEMA=http
+FE_REACT_PORT=3000
+FE_REACT_HOST=localhost
 FE_JS_PORT=3001
 FE_JS_HOST=localhost
 

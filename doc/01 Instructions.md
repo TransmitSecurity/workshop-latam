@@ -33,7 +33,7 @@ First, edit `.env` file at the root folder and modify the following lines with t
 ### Transmit configuration ###
 VITE_TS_CLIENT_ID=<your_transmit_app_client_id>
 TS_CLIENT_SECRET=<your_transmit_app_client_secret>
-VITE_TS_BASE_URL=https://api.transmitsecurity.io/cis
+VITE_TS_BASE_URL=https://api.transmitsecurity.io
 ```
 
 Restart the application so that it gets the new values in `.env`
@@ -98,7 +98,7 @@ export const getClientAccessToken = async () => {
  */
 export const registerPasskey = async (webauthnEncodedResult, externalUserId, clientAccessToken) => {
   try {
-    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/v1/auth/webauthn/external/register`, {
+    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/cis/v1/auth/webauthn/external/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ Copy the following snippet in the service:
  */
 export const authPasskey = async (webauthnEncodedResult, clientAccessToken) => {
   try {
-    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/v1/auth/webauthn/authenticate`, {
+    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/cis/v1/auth/webauthn/authenticate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

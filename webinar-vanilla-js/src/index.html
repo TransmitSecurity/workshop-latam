@@ -79,7 +79,7 @@
 
     <script type="module" src="/main.js"></script>
     <script type="module">
-      import { showToastSync, storeSaveUser } from './main.js';
+      import { showToastSync, storeSaveUser, RISK_ACTIONS } from './main.js';
 
       const btnLogin = document.getElementById('btn-login');
       btnLogin.addEventListener('click', loginWithPassword);
@@ -186,21 +186,36 @@
        * @param {string} email User email
        */
       async function completePasskeyLogin(webauthnEncodedResult, email) {
+        // Trigger action event
+        const actionResponse = await window.tsPlatform.drs.triggerActionEvent(RISK_ACTIONS.LOGIN);
+
+        // Complete login with passkey plus risk
         const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/webauthn/auth`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userId: email, webauthnEncodedResult }),
+          body: JSON.stringify({ userId: email, webauthnEncodedResult, actionToken: actionResponse.actionToken }),
         });
         if (resp.status !== 200) {
           console.error('Failed to login with passkey');
           showToastSync('Invalid user or passkey', 'warning');
+          initPasskeyAutofill();
           return;
         }
 
         const data = await resp.json();
         storeSaveUser(data.email, data.token);
+
+        // Set User ID for traceability
+        try {
+          const setAuthnUserOk = await window.tsPlatform.drs.setAuthenticatedUser(data.email);
+          console.log('Set Authenticated User:', setAuthnUserOk ? 'OK' : 'Failed');
+        } catch (error) {
+          console.warn('Failed to set authenticated user', error);
+          showToastSync('Failed to set authenticated user', 'warning');
+        }
+
         window.location.href = '/home.html';
       }
 

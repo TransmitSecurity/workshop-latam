@@ -6,5 +6,5 @@ Exploring non-phisheable next generation passwordless authentication. [Here are 
 
 - Session Recording of the webinar on June 4th, 2024 ("Explorando la Autenticacion sin Contraseñas") [available](https://transmitsecurity.zoom.us/webinar/register/WN_TX-R3KVIScGfJcFKPanzMA#/registration)
 
-## SESSION 2: Add Risk Context 
+## SESSION 2: Add Risk Context // TODO: review
 Add risk context to user actions. [Here are the instructions](./doc/02%20Instructions.md).

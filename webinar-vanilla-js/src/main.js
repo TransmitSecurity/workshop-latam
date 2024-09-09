@@ -1,5 +1,10 @@
 import './style.css';
 
+/***** RISK ACTIONS *****/
+export const RISK_ACTIONS = {
+  LOGIN: 'login',
+};
+
 /***** AUTH MGMT *****/
 const STORE_KEY = 'ianftart_user';
 export const storeSaveUser = (userid, token, cart = {}) => {
@@ -119,10 +124,13 @@ const ROUTES = [
   const route = ROUTES.find((route) => route.path === currentRoute);
   if (!route) {
     window.location.href = '/not-found.html';
+    return;
   } else if (route.auth && !storeGetUser()) {
     window.location.href = '/';
+    return;
   } else if (route && !route.auth && storeGetUser()) {
     window.location.href = '/home.html';
+    return;
   }
 
   // Update Cart
