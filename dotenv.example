@@ -1,6 +1,4 @@
 #SCHEMA=http
-FE_REACT_PORT=3000
-FE_REACT_HOST=localhost
 FE_JS_PORT=3001
 FE_JS_HOST=localhost
 
@@ -16,4 +14,18 @@ JWT_TYPE=Bearer
 ### Transmit configuration ###
 VITE_TS_CLIENT_ID=<your_transmit_app_client_id>
 TS_CLIENT_SECRET=<your_transmit_app_client_secret>
-VITE_TS_BASE_URL=https://api.transmitsecurity.io/cis
+VITE_TS_BASE_URL=https://api.transmitsecurity.io
+VITE_TS_SDK_URL=https://platform-websdk.transmitsecurity.io/platform-websdk/latest/ts-platform-websdk.js
+
+## Orchestration: Journeys
+VITE_TS_JOURNEY_LOGIN=AINFTArt-Login-v3
+VITE_TS_JOURNEY_REGISTER=AINFTArt-Register-v3
+VITE_TS_JOURNEY_CHECKOUT=AINFTArt-Checkout-v3
+VITE_TS_JOURNEY_LOGOUT=AINFTArt-logout-v1
+
+# FLAGS
+VITE_FLAG_DISABLE_PASSKEYS=false
+VITE_FLAG_LOGIN_USE_IDO=true
+VITE_FLAG_REGISTER_USE_IDO=true
+VITE_FLAG_CHECKOUT_USE_IDO=true
+VITE_FLAG_LOGOUT_USE_IDO=true

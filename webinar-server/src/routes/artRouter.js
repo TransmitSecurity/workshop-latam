@@ -1,7 +1,10 @@
 import express from 'express';
 import { authMiddleware } from '../helpers/middlewares.js';
 import { dataArray, TAX_RATE } from '../services/artService.js';
+import riskController from '../controllers/riskController.js';
+import artController from '../controllers/artController.js';
 import dbService from '../services/dbService.js';
+import { validateIDOToken } from '../services/transmitService.js';
 
 const artRouter = express.Router();
 
@@ -41,24 +44,48 @@ artRouter.post('/pre-checkout', authMiddleware, (req, res) => {
   }
 });
 
-artRouter.post('/checkout', authMiddleware, async (req, res) => {
-  const { purchase, cart } = req.body;
+/**
+ * Checkout endpoint implementation for both internal and external orchestration
+ * @param {Request} req Request object
+ * @param {Response} res Response object
+ * @param {Boolean} isExternal whether purchase is based on orquestration or not
+ * @returns response
+ */
+const checkout = async (req, res, isExternal) => {
+  let { purchase, cart, actionToken } = req.body;
 
-  // Validate the purchase order is correct
-  for (let item of Object.values(cart)) {
-    const { id, price } = item;
-    const itemData = dataArray.find((data) => data.id === Number(id));
-    if (itemData.price !== price) {
-      return res.status(400).json({ message: 'Invalid cart' });
-    }
+  // If isExternal, the param sent is the token not the actionToken
+  if (isExternal) {
+    const decodedIdoToken = await validateIDOToken(actionToken);
+    actionToken = decodedIdoToken.actionToken;
   }
-  // Store the order in the database
-  await dbService.addPurchase(req.locals.userid, {
-    purchase,
-    cart,
-  });
 
-  res.status(200).json({ message: 'Checkout successful' });
+  try {
+    if (!isExternal) {
+      // Manage risk recommendation for purchase
+      const recommendation = await riskController.manageRiskPurchase(actionToken);
+
+      // Store the recommendation in the database
+      await dbService.saveLastRiskRecommendation(req.locals.userid, recommendation);
+    }
+
+    // Process the purchase order
+    await artController.processPurchaseOrder(req.locals.userid, purchase, cart, actionToken);
+
+    return res.status(200).json({ message: 'Checkout successful' });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// Checkout endpoint
+artRouter.post('/checkout', authMiddleware, async (req, res) => {
+  return checkout(req, res, false);
+});
+
+// Checkout endpoint used for external orchestration based purchase
+artRouter.post('/checkout/external', authMiddleware, async (req, res) => {
+  return checkout(req, res, true);
 });
 
 export default artRouter;

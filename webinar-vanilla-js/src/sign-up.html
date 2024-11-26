@@ -16,7 +16,12 @@
             ><span class="text-slate-500">T</span>
             <span class="text-3xl ina-logo text-indigo-600">Art</span>
           </h1>
-          <div class="mt-12 flex flex-col items-center">
+          <div id="splash" class="mt-20 flex flex-col items-center">
+            <span class="mb-2 text-lg">Loading...</span>
+            <img src="./img/ai-spinner.png" alt="AI" class="mx-auto rotate" />
+            <span class="mt-2 text-xl text-indigo-600">don't touch that mouse!</span>
+          </div>
+          <div id="signup-main" class="hidden mt-12 flex flex-col items-center">
             <h2 class="ina-title mb-8">Sign up</h2>
             <div class="w-full flex-1">
               <!-- TODO: Add social login
@@ -36,6 +41,18 @@
 
               <div class="mx-auto max-w-xs">
                 <input class="ina-inp-txt-primary" type="email" placeholder="Email" />
+
+                <!-- Passkeys -->
+                <button id="btn-ido-passkeys" class="hidden ina-btn-primary mt-5">
+                  <span class="ml-3"> Sign Up with </span>
+                  <img src="/icon-fingerprint.svg" class="ml-3 w-6 h-6" alt="Sign up with biometrics" />
+                </button>
+
+                <div id="hr-ido-sep" class="hidden inline-flex items-center justify-center w-full">
+                  <span class="px-3 font-medium text-gray-400 my-4 cursor-pointer">or use password</span>
+                </div>
+
+                <!-- User/Password-->
                 <input class="ina-inp-txt-primary mt-5" type="password" placeholder="Password" />
                 <button id="btn-signup" class="ina-btn-primary mt-5">
                   <svg
@@ -66,6 +83,59 @@
               </div>
             </div>
           </div>
+          <div id="signup-stepup-otp" class="mt-12 flex flex-col items-center hidden">
+            <h2 class="ina-title mb-8">Email Verification</h2>
+            <div class="w-full flex-1">
+              <div class="mx-auto max-w-xs">
+                <div class="mt-3 text-center text-sm text-gray-600">
+                  Enter the 6-digit verification code sent to your email.
+                </div>
+                <div class="my-10 w-full flex flex-row justify-center">
+                  <input id="email-otp-1" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-2" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-3" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-4" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-5" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-6" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                </div>
+                <button id="btn-otp-continue" class="ina-btn-primary mt-5">
+                  <svg
+                    class="w-6 h-6 -ml-2"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                  </svg>
+                  <span class="ml-3"> Continue </span>
+                </button>
+                <a aria-label="cancel registration" class="ina-btn-white mt-5 text-gray-400" href="/sign-up.html">
+                  <img
+                    src="/icon-arrow-left.svg"
+                    alt="back"
+                    class="svg-inline--fa fa-arrow-left fa-w-14 w-4 mr-2 inline-flex" />
+                  Back
+                </a>
+              </div>
+            </div>
+          </div>
+          <div id="sign-promote-passkeys" class="mt-12 flex flex-col items-center hidden">
+            <h2 class="ina-title mb-8">More secure login!</h2>
+            <div class="w-full flex-1">
+              <div class="mx-auto max-w-xs">
+                <div class="mt-3 text-center text-sm text-gray-600">
+                  Now we are going to enable passkeys for a more secure and convenient login experience.
+                </div>
+                <img src="/img/ai-fprint.png" alt="fingerprint" class="mt-4 w-32 mx-auto" />
+                <button id="btn-promote-continue" class="ina-btn-primary mt-5">
+                  <img src="/icon-passkeys-fido.png" class="ml-3 w-6 h-6" alt="Continue with biometrics" />
+                  <span class="ml-3"> Continue </span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="flex-1 bg-indigo-100 text-center hidden lg:flex">
           <div
@@ -80,27 +150,104 @@
 
     <script type="module" src="/main.js"></script>
     <script type="module">
-      import { storeSaveUser, showToastSync } from './main.js';
+      import {
+        checkFlag,
+        loadAndInitTsSdk,
+        storeSaveUser,
+        showToastSync,
+        RISK_ACTIONS,
+        newOrchestrationController,
+        animateOtpInputs,
+        getOtpFromInputs,
+        disableButton,
+        enableButton,
+        validateEmail,
+      } from './main.js';
+
+      const signUpMain = document.getElementById('signup-main');
+      const splash = document.getElementById('splash');
+      const showMain = () => {
+        signUpMain.classList.remove('hidden');
+        splash.classList.add('hidden');
+      };
 
       const btnSignup = document.getElementById('btn-signup');
-      btnSignup.addEventListener('click', signUpWithPassword);
+      btnSignup.addEventListener('click', () => {
+        if (checkFlag('VITE_FLAG_REGISTER_USE_IDO')) {
+          signUpWithIDOPassword();
+        } else {
+          signUpWithPassword();
+        }
+      });
 
       /**
-       * Registers a user with email and password
+       * Initialize SDK and make required changes in the UI for passwordless
        */
-      async function signUpWithPassword() {
+      const letsGoPasswordless = async () => {
+        try {
+          // Check if biometrics is supported
+          const isBiometricsSupported = await window.tsPlatform.webauthn.isPlatformAuthenticatorSupported();
+          console.log('isBiometricsSupported', isBiometricsSupported);
+          if (isBiometricsSupported) {
+            btnSignup.removeEventListener('click', signUpWithPassword);
+            // Remove password input and add biometrics
+            document.querySelector('input[type="password"]').classList.add('hidden');
+            btnSignup.getElementsByTagName('img')[0].classList.remove('hidden');
+            // Add Passkey registration logic to the button
+            btnSignup.addEventListener('click', signUpWithPasskey);
+          }
+        } catch (error) {
+          console.error('Failed to initialize TS Platform SDK', error);
+          showToastSync('Failed to initialize TS Platform SDK', 'error');
+        }
+      };
+      // Load and Initialize the SDK once it's loaded
+      if (checkFlag('VITE_FLAG_DISABLE_PASSKEYS')) {
+        loadAndInitTsSdk(showMain);
+      } else if (checkFlag('VITE_FLAG_REGISTER_USE_IDO')) {
+        loadAndInitTsSdk(() => {
+          prepareSignUpWithPasskeysIDO();
+          showMain();
+        });
+      } else {
+        loadAndInitTsSdk(() => {
+          letsGoPasswordless();
+          showMain();
+        });
+      }
+
+      // TODO: Remove (or not :P) - helper for demos
+      document.querySelector('h2').addEventListener('click', () => {
+        document.querySelector('input[type="email"]').value = 'angeldemo+demo2@protonmail.com'; // XXX: replace with 'demo@demo.demo';
+        document.querySelector('input[type="password"]').value = 'Demo1234!';
+      });
+
+      /**
+       * Registers a user with a passkey
+       */
+      async function signUpWithPasskey() {
         const email = document.querySelector('input[type="email"]').value;
-        const password = document.querySelector('input[type="password"]').value;
-        if (!email || !password) {
-          showToastSync('Please enter email and password', 'warning');
+        if (!email || !validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
           return;
         }
-        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/register`, {
+
+        // Trigger action event
+        const actionResponse = await window.tsPlatform.drs.triggerActionEvent(RISK_ACTIONS.REGISTER);
+
+        // Registers WebAuthn credentials on the device and returns an encoded result
+        // that should be passed to your backend to complete the registration flow
+        const encodedResult = await window.tsPlatform.webauthn.register(email);
+        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/webauthn/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({
+            webauthnEncodedResult: encodedResult,
+            userId: email,
+            actionToken: actionResponse.actionToken,
+          }),
         });
         if (resp.status !== 200) {
           console.error('Failed to register');
@@ -112,6 +259,199 @@
         const data = await resp.json();
         storeSaveUser(email, data.token);
         window.location.href = '/home.html';
+      }
+
+      /**
+       * Registers a user with email and password
+       */
+      async function signUpWithPassword() {
+        const email = document.querySelector('input[type="email"]').value;
+        const password = document.querySelector('input[type="password"]').value;
+        if (!email || !password) {
+          showToastSync('Please enter email and password', 'warning');
+          return;
+        } else if (!validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
+          return;
+        }
+
+        // Trigger action event
+        const actionResponse = await window.tsPlatform.drs.triggerActionEvent(RISK_ACTIONS.REGISTER);
+
+        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password, actionToken: actionResponse.actionToken }),
+        });
+        if (resp.status !== 200) {
+          console.error('Failed to register');
+          const error = await resp.json();
+          showToastSync(error.message || 'Registration failed', 'warning');
+          return;
+        }
+
+        const data = await resp.json();
+        storeSaveUser(email, data.token);
+        window.location.href = '/home.html';
+      }
+
+      /**
+       * Prepare the journey for IDO registration
+       */
+      async function prepareSignUpWithPasskeysIDO() {
+        if (!(await window.tsPlatform.webauthn.isPlatformAuthenticatorSupported())) return;
+
+        const btnIdoSignupPasskeys = document.getElementById('btn-ido-passkeys');
+        const hrIdoSep = document.getElementById('hr-ido-sep');
+        btnIdoSignupPasskeys.classList.remove('hidden');
+        hrIdoSep.classList.remove('hidden');
+        const password = document.querySelector('input[type="password"]');
+        password.classList.add('hidden');
+        btnSignup.classList.add('hidden');
+
+        hrIdoSep.addEventListener('click', async () => {
+          password.classList.remove('hidden');
+          btnSignup.classList.remove('hidden');
+          btnIdoSignupPasskeys.classList.add('hidden');
+          hrIdoSep.classList.add('hidden');
+        });
+
+        btnIdoSignupPasskeys.addEventListener('click', signUpWithIDOPasskeys);
+      }
+
+      /**
+       * Sign up with User/Password using IDO orchestration
+       */
+      async function signUpWithIDOPassword() {
+        const email = document.querySelector('input[type="email"]').value;
+        const password = document.querySelector('input[type="password"]').value;
+        if (!email || !password) {
+          showToastSync('Please enter email and password', 'warning');
+          return;
+        } else if (!validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
+          return;
+        }
+        disableButton(btnSignup);
+        signUpWithIDO({
+          username: email,
+          password: password,
+        });
+      }
+
+      /**
+       * Sign up with Passkey (passwordless authn) using IDO orchestration
+       */
+      async function signUpWithIDOPasskeys() {
+        const email = document.querySelector('input[type="email"]').value;
+        if (!email || !validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
+          return;
+        }
+        disableButton(document.getElementById('btn-ido-passkeys'));
+        signUpWithIDO({
+          username: email,
+          registerPasskeys: true,
+        });
+      }
+
+      /**
+       * Registers a user with IDO
+       */
+      async function signUpWithIDO(journeyParams) {
+        // Get instance of the orchestrator, configure handlers and start the journey
+        const orchestrator = newOrchestrationController();
+        const onSuccess = async (idoResponse) => {
+          // On successful journey completion, send idoResponse.token to backend
+          // to complete authentication and grant access
+          const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/register/external`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: document.querySelector('input[type="email"]').value,
+              password: document.querySelector('input[type="password"]').value,
+              token: idoResponse.token,
+            }),
+          });
+          if (resp.status !== 200) {
+            console.error('Failed to signup');
+            showToastSync('Registration failed', 'warning');
+            return;
+          }
+
+          const data = await resp.json();
+          storeSaveUser(data.userId, data.token);
+          window.location.href = '/home.html';
+        };
+        const onFailure = (idoResponse) => {
+          console.error('Failed to signup', idoResponse);
+          showToastSync('Registration failed', 'warning');
+          // Enable buttons
+          enableButton(btnSignup);
+          enableButton(document.getElementById('btn-ido-passkeys'));
+        };
+        const handleStepEmailOTP = (idoResponse) => {
+          // hide registration form and show OTP form
+          document.getElementById('signup-main').classList.add('hidden');
+          document.getElementById('signup-stepup-otp').classList.remove('hidden');
+
+          animateOtpInputs('email-otp-', 6, 'btn-otp-continue');
+          // Add listener to OTP form continue button
+          document.getElementById('btn-otp-continue').addEventListener('click', () => {
+            const passcode = getOtpFromInputs('email-otp-', 6);
+            // Call IDO backend with otp to continue journey
+            orchestrator.submitResponseEmailOTP(passcode);
+          });
+        };
+        const handleStepPromotePasskeys = async (idoResponse) => {
+          // NOTE: this step cannot be reached if biometrics not supported, skipped for simplicity for now
+
+          // hide signup and OTP forms
+          document.getElementById('signup-main').classList.add('hidden');
+          document.getElementById('signup-stepup-otp').classList.add('hidden');
+          // show promote form
+          document.getElementById('sign-promote-passkeys').classList.remove('hidden');
+
+          document.getElementById('btn-promote-continue').addEventListener('click', () => {
+            // Call IDO backend to promote passkeys
+            orchestrator.submitResponseForm({ [Object.keys(idoResponse.data.form_schema.properties)[0]]: true });
+          });
+        };
+        const handleStepPasskeysRegistration = async (idoResponse) => {
+          let data = idoResponse.data;
+          // Registers passkey credentials on the device
+          try {
+            const registrationResult = await window.tsPlatform.webauthn.register(data.username, {
+              allowCrossPlatformAuthenticators: data.allow_cross_platform_authenticators,
+              registerAsDiscoverable: data.register_as_discoverable,
+              displayName: data.display_name,
+            });
+            // Submit the enconded result from WebAuthn SDK module to the journey to
+            // complete registration
+            orchestrator.submitResponseForm({
+              webauthn_encoded_result: registrationResult,
+            });
+          } catch (error) {
+            console.error('Failed to register passkey', error);
+            // Warn IDO about the failure
+            orchestrator.submitResponseForm({
+              webauthn_encoded_result: null,
+            });
+          }
+        };
+        orchestrator.setHandlers({
+          handleStepSuccess: onSuccess,
+          handleStepRejection: onFailure,
+          handleStepEmailOTP: handleStepEmailOTP,
+          handleStepPromotePasskeys: handleStepPromotePasskeys,
+          handleStepPasskeysRegistration: handleStepPasskeysRegistration,
+        });
+
+        orchestrator.startJourney(import.meta.env.VITE_TS_JOURNEY_REGISTER, journeyParams);
       }
     </script>
   </body>

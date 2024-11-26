@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 /**
  * Compares a password with a hash
@@ -33,4 +34,17 @@ export const bcryptHashSync = (password) => {
       }
     });
   });
+};
+
+/**
+ * Sign session token for the user passed as parameter
+ * @param {JSON} userId userId/externalUserId
+ * @returns signed token
+ */
+export const signSessionJWT = (userId) => {
+  let loginData = {
+    userid: userId,
+    signInTime: Date.now(),
+  };
+  return jwt.sign(loginData, process.env.JWT_SECRET_KEY);
 };

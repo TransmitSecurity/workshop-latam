@@ -270,6 +270,47 @@
               </form>
             </div>
           </div>
+          <div id="stepup-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 z-50">
+            <div class="bg-white w-96 mx-auto mt-40 p-4 rounded-lg">
+              <h1 class="text-2xl font-semibold">
+                <span class="bg-indigo-900 text-white font-semibold rounded-full py-1 px-2">AI</span>
+                <span class="text-slate-900">N</span><span class="text-slate-700">F</span
+                ><span class="text-slate-500">T</span>
+                <span class="text-3xl ina-logo text-indigo-600">Art</span>
+              </h1>
+              <div class="py-5 border-b border-gray-300 text-2xl font-semibold">Just for your security</div>
+              <div id="passkeys-form">
+                <div class="py-5 border-b border-gray-300 flex flex-col items-center">
+                  <p>Use your biometrics to finish the purchase</p>
+                  <img src="/img/ai-fprint.png" alt="fingerprint" class="mt-4 w-32 mx-auto" />
+                </div>
+                <button id="btn-stepup-passkeys" class="ina-btn-primary mt-4">
+                  Continue with
+                  <img src="/icon-fingerprint.svg" class="ml-3 w-6 h-6" alt="biometrics" />
+                </button>
+                <p class="mt-2 text-gray-500 text-sm text-center">
+                  or <a href="#" id="btn-stepup-otp" class="font-semibold">get a code in your email</a>
+                </p>
+              </div>
+              <div id="otp-form" class="hidden">
+                <div class="mt-3 text-center text-sm text-gray-600">
+                  Enter the 6-digit verification code sent to your email.
+                </div>
+                <div class="my-10 w-full flex flex-row justify-center">
+                  <input id="email-otp-1" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-2" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-3" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-4" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-5" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-6" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                </div>
+                <button id="btn-otp-continue" class="ina-btn-primary mt-5">
+                  <span class="ml-3"> Continue </span>
+                </button>
+              </div>
+              <button id="btn-stepup-back" class="ina-btn-white mt-3 text-gray-400">Cancel</button>
+            </div>
+          </div>
         </div>
       </main>
       <footer class="bg-gray-100 py-8 text-center">
@@ -278,7 +319,19 @@
     </div>
     <script type="module" src="/main.js"></script>
     <script type="module">
-      import { cartUpdateDisplay, storeGetUser, storeSaveUser, showToastSync, showModal, addModal } from './main.js';
+      import {
+        checkFlag,
+        cartUpdateDisplay,
+        storeGetUser,
+        storeSaveUser,
+        showToastSync,
+        showModal,
+        addModal,
+        RISK_ACTIONS,
+        newOrchestrationController,
+        animateOtpInputs,
+        getOtpFromInputs,
+      } from './main.js';
       const user = storeGetUser();
       const token = user?.token;
 
@@ -374,41 +427,147 @@
       }
       updateUI();
 
+      const stepUpModal = document.getElementById('stepup-modal');
+      const passkeysForm = document.getElementById('passkeys-form');
+      const otpForm = document.getElementById('otp-form');
+
+      // Complete purchase order
+      const completePurchase = async (endpointPath, actionToken) => {
+        // Simulate purchase verification
+        await showModal(5);
+
+        // Continue with the "checkout"
+        const form = document.querySelector('form');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}${endpointPath}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            purchase: data,
+            cart: user.cart,
+            actionToken: actionToken,
+          }),
+        });
+
+        if (resp.status !== 200) {
+          console.error('Failed to checkout');
+          const data = await resp.json();
+          showToastSync(data?.message || 'Failed to checkout', 'error');
+        } else {
+          const data = await resp.json();
+          console.log('Purchase completed', data?.message || '');
+          showToastSync('Purchase completed', 'success');
+          // Clear cart
+          storeSaveUser(user.userid, user.token, {});
+          cartUpdateDisplay();
+          window.location.href = '/checkout-done.html';
+        }
+      };
+
+      /**
+       * Make purchase
+       */
+      const makePurchase = async (trxData) => {
+        // Trigger action event: checkout
+        const actionResponse = await window.tsPlatform.drs.triggerActionEvent(RISK_ACTIONS.CHECKOUT, trxData);
+        completePurchase('/art/checkout', actionResponse.actionToken);
+      };
+
+      /**
+       * Make purchase using IDO
+       */
+      const makePurchaseIDO = async (trxData) => {
+        // Invoke IDO orchestration
+        const journeyParams = {
+          trxInfo: trxData,
+          externalUserId: user.userid,
+        };
+        const orchestrator = newOrchestrationController();
+        const onSuccess = async (idoResponse) => {
+          completePurchase('/art/checkout/external', idoResponse.token);
+        };
+        const onFailure = (idoResponse) => {
+          console.error('Failed to checkout');
+          showToastSync('Failed to checkout', 'error');
+        };
+        const handleStepChooseStepUp = async (idoResponse) => {
+          passkeysForm.classList.remove('hidden');
+          otpForm.classList.add('hidden');
+          stepUpModal.classList.remove('hidden');
+          // Passkeys
+          document.getElementById('btn-stepup-passkeys').addEventListener('click', async () => {
+            await orchestrator.submitResponseForm({
+              [Object.keys(idoResponse.data.form_schema.properties)[0]]: 'passkey',
+            });
+          });
+          // Email OTP
+          document.getElementById('btn-stepup-otp').addEventListener('click', async () => {
+            await orchestrator.submitResponseForm({
+              [Object.keys(idoResponse.data.form_schema.properties)[0]]: 'emailOTP',
+            });
+            passkeysForm.classList.add('hidden');
+            otpForm.classList.remove('hidden');
+          });
+          // Cancel step-up
+          document.getElementById('btn-stepup-back').addEventListener('click', async () => {
+            await orchestrator.cancelResponseForm();
+            stepUpModal.classList.add('hidden');
+          });
+        };
+        const handleStepPasskeysStepUp = async (idoResponse) => {
+          const authnResult = await window.tsPlatform.webauthn.authenticate.modal(user.userid);
+          // Submits to the journey the encoded result returned by the WebAuthn SDK call
+          await orchestrator.submitResponseForm({
+            [Object.keys(idoResponse.data.form_schema.properties)[0]]: authnResult,
+          });
+          stepUpModal.classList.add('hidden');
+        };
+        const handleStepEmailOTPStepUp = async (idoResponse) => {
+          animateOtpInputs('email-otp-', 6, 'btn-otp-continue');
+          // Add listener to OTP form continue button
+          document.getElementById('btn-otp-continue').addEventListener('click', () => {
+            const passcode = getOtpFromInputs('email-otp-', 6);
+            stepUpModal.classList.add('hidden');
+            // Call IDO backend with otp to continue journey
+            orchestrator.submitResponseEmailOTP(passcode);
+          });
+        };
+        orchestrator.setHandlers({
+          handleStepSuccess: onSuccess,
+          handleStepRejection: onFailure,
+          handleStepChooseStepUp: handleStepChooseStepUp,
+          handleStepPromotePasskeys: handleStepPasskeysStepUp,
+          handleStepEmailOTP: handleStepEmailOTPStepUp,
+        });
+        orchestrator.startJourney(import.meta.env.VITE_TS_JOURNEY_CHECKOUT, journeyParams);
+      };
+
       addModal('Just a moment', 'Wait while we verify your purchase.');
       document.getElementById('btn-purchase').addEventListener('click', async (e) => {
         e.preventDefault();
 
         const form = document.querySelector('form');
         if (form.reportValidity()) {
-          // Simulate purchase verification
-          await showModal(5);
-
-          // Continue with the "checkout"
-          const formData = new FormData(form);
-          const data = Object.fromEntries(formData.entries());
-          const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/art/checkout`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
+          const totalAmount = Number(document.getElementById('total').innerHTML);
+          const trxData = {
+            transactionData: {
+              amount: totalAmount,
+              currency: 'USD',
+              reason: `Purchased ${Object.keys(user.cart).reduce((acc, key) => acc + user.cart[key].quantity, 0)} NFTs for ${totalAmount} USD.`,
+              transactionDate: Date.now(),
+              payer: {
+                name: user.userid,
+              },
             },
-            body: JSON.stringify({
-              purchase: data,
-              cart: user.cart,
-            }),
-          });
-          if (resp.status !== 200) {
-            console.error('Failed to checkout');
-            const data = await resp.json();
-            showToastSync(data?.message || 'Failed to checkout', 'error');
+          };
+          if (checkFlag('VITE_FLAG_CHECKOUT_USE_IDO')) {
+            makePurchaseIDO(trxData);
           } else {
-            const data = await resp.json();
-            console.log('Purchase completed', data?.message || '');
-            showToastSync('Purchase completed', 'success');
-            // Clear cart
-            storeSaveUser(user.userid, user.token, {});
-            cartUpdateDisplay();
-            window.location.href = '/checkout-done.html';
+            makePurchase(trxData);
           }
         }
       });

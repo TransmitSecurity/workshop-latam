@@ -16,8 +16,14 @@
   .ina-btn-white {
     @apply border text-lg font-semibold pt-2 pb-1 leading-relaxed flex justify-center items-center focus:ring-1 focus:outline-none w-full rounded-sm;
   }
+  .ina-btn-disabled {
+    @apply bg-gray-300 hover:bg-gray-300 text-gray-500 cursor-not-allowed;
+  }
   .ina-inp-txt-primary {
     @apply w-full px-8 py-3 rounded-sm font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white;
+  }
+  .ina-inp-txt-single-digit {
+    @apply w-10 h-14 text-center text-2xl font-semibold bg-gray-100 border border-gray-200 hover:border-gray-400 appearance-none rounded outline-none focus:bg-white focus:border-gray-400 focus:ring-2 focus:ring-gray-100 mx-1;
   }
   .ina-a-primary {
     @apply text-indigo-500 hover:text-indigo-700 font-semibold;
@@ -277,3 +283,17 @@ button.warning-toast {
   }
 }
 /* TOAST END */
+
+/* Splash image */
+.rotate {
+  animation: rotation 10s infinite linear;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}

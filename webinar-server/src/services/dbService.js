@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { JSONFilePreset } from 'lowdb/node';
-import { bcryptHashSync } from '../helpers/cryptoHelper.js';
 
 const DB_DIR = './src/db';
 const DB_FILENAME = 'database.json';
@@ -17,7 +16,7 @@ if (db.data.users.length === 0) {
     users: [
       {
         userid: 'demo@demo.com',
-        password: await bcryptHashSync('demo'),
+        password: '$2b$10$vAHod8dMNe/Dqb74gRfGe.f1rSp2ee7.eXDPcnlIq/dwHzWNxj5ke', // "demo"
       },
     ],
   };
@@ -48,6 +47,12 @@ const addPurchase = async (userid, purchase) => {
   await db.write();
 };
 
+const saveLastRiskRecommendation = async (userid, recommendation) => {
+  const user = db.data.users.find((u) => u.userid === userid);
+  user.lastRiskRecommendation = recommendation;
+  await db.write();
+};
+
 // eslint-disable-next-line
 const resetDB = async () => {
   db.data = defaultData;
@@ -59,5 +64,6 @@ const dbService = {
   addUser,
   deleteUser,
   addPurchase,
+  saveLastRiskRecommendation,
 };
 export default dbService;
