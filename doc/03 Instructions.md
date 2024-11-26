@@ -1277,6 +1277,9 @@ There are some other changes and enhancements. Feel free to take a look at it in
 git clone -b step3-final https://github.com/transmitsecurity/workshop-latam
 ```
 
+> [!NOTE] NOTE
+> _Remember to check and update your **.env** file with the variables in `dotenv.example` and to restart the server to get the changes after updating it_.
+
 For this webinar, we configured the `Limit amount` for the _purchase_ as **$ 100** 💰. Try to buy enough _NFTs_ to see what happens 😅
 
 ![checkout stepup](./assets/checkout-stepup.png)

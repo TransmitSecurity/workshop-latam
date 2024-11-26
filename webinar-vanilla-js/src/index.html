@@ -16,7 +16,12 @@
             ><span class="text-slate-500">T</span>
             <span class="text-3xl ina-logo text-indigo-600">Art</span>
           </h1>
-          <div id="login-main" class="mt-12 flex flex-col items-center">
+          <div id="splash" class="mt-20 flex flex-col items-center">
+            <span class="mb-2 text-lg">Loading...</span>
+            <img src="./img/ai-spinner.png" alt="AI" class="mx-auto rotate" />
+            <span class="mt-2 text-xl text-indigo-600">don't touch that mouse!</span>
+          </div>
+          <div id="login-main" class="hidden mt-12 flex flex-col items-center">
             <h2 class="ina-title mb-8">Login</h2>
             <div class="w-full flex-1">
               <!-- // TODO: Add social login
@@ -36,6 +41,18 @@
 
               <div class="mx-auto max-w-xs">
                 <input class="ina-inp-txt-primary" autocomplete="username webauthn" type="email" placeholder="Email" />
+
+                <!-- Passkeys -->
+                <button id="btn-ido-passkeys" class="hidden ina-btn-primary mt-5">
+                  <span class="ml-3"> Sign In with </span>
+                  <img src="/icon-fingerprint.svg" class="ml-3 w-6 h-6" alt="Login with biometrics" />
+                </button>
+
+                <div id="hr-ido-sep" class="hidden inline-flex items-center justify-center w-full">
+                  <span class="px-3 font-medium text-gray-400 my-4 cursor-pointer">or use password</span>
+                </div>
+
+                <!-- User/Password -->
                 <input class="ina-inp-txt-primary mt-5" type="password" placeholder="Password" />
                 <button id="btn-login" class="ina-btn-primary mt-5">
                   <svg
@@ -93,12 +110,32 @@
                   </svg>
                   <span class="ml-3"> Continue </span>
                 </button>
-                <a aria-label="back-to-products" class="ina-btn-white mt-5 text-gray-400" href="/">
+                <a aria-label="cancel-login" class="ina-btn-white mt-5 text-gray-400" href="/">
                   <img
                     src="/icon-arrow-left.svg"
                     alt="back"
                     class="svg-inline--fa fa-arrow-left fa-w-14 w-4 mr-2 inline-flex" />
                   Back
+                </a>
+              </div>
+            </div>
+          </div>
+          <div id="login-promote-passkeys" class="mt-12 flex flex-col items-center hidden">
+            <h2 class="ina-title mb-8">More secure authentication?</h2>
+            <div class="w-full flex-1">
+              <div class="mx-auto max-w-xs">
+                <div class="mt-3 text-center text-sm text-gray-600">
+                  Would you like to enable passkeys for a more secure login experience?
+                </div>
+                <button id="btn-promote-continue" class="ina-btn-primary mt-5">
+                  <img src="/icon-passkeys-fido.png" class="ml-3 w-6 h-6" alt="Continue with biometrics" />
+                  <span class="ml-3"> Continue </span>
+                </button>
+                <a
+                  id="btn-promote-cancel"
+                  aria-label="continue-login-skip-passkeys-registration"
+                  class="ina-btn-white mt-5 text-gray-400 cursor-pointer">
+                  Skip for now
                 </a>
               </div>
             </div>
@@ -126,12 +163,22 @@
         newOrchestrationController,
         animateOtpInputs,
         getOtpFromInputs,
+        disableButton,
+        enableButton,
+        validateEmail,
       } from './main.js';
+
+      const loginMain = document.getElementById('login-main');
+      const splash = document.getElementById('splash');
+      const showMain = () => {
+        loginMain.classList.remove('hidden');
+        splash.classList.add('hidden');
+      };
 
       const btnLogin = document.getElementById('btn-login');
       btnLogin.addEventListener('click', () => {
         if (checkFlag('VITE_FLAG_LOGIN_USE_IDO')) {
-          loginWithIDO();
+          loginWithIDOPassword();
         } else {
           loginWithPassword();
         }
@@ -163,14 +210,22 @@
       };
       // Load and Initialize the SDK once it's loaded
       if (checkFlag('VITE_FLAG_DISABLE_PASSKEYS')) {
-        loadAndInitTsSdk();
+        loadAndInitTsSdk(showMain);
+      } else if (checkFlag('VITE_FLAG_LOGIN_USE_IDO')) {
+        loadAndInitTsSdk(() => {
+          prepareLoginWithPasskeysIDO();
+          showMain();
+        });
       } else {
-        loadAndInitTsSdk(letsGoPasswordless);
+        loadAndInitTsSdk(() => {
+          letsGoPasswordless();
+          showMain();
+        });
       }
 
       // TODO: Remove (or not :P) - helper for demos
       document.querySelector('h2').addEventListener('click', () => {
-        document.querySelector('input[type="email"]').value = 'demo@demo.demo';
+        document.querySelector('input[type="email"]').value = 'angeldemo+demo1@protonmail.com'; // XXX: replace with 'demo@demo.demo';
         document.querySelector('input[type="password"]').value = 'Demo1234!';
       });
 
@@ -179,8 +234,8 @@
        */
       async function loginWithPasskeyModal() {
         const email = document.querySelector('input[type="email"]').value;
-        if (!email) {
-          showToastSync('Please enter email', 'warning');
+        if (!email || !validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
           return;
         }
 
@@ -280,6 +335,9 @@
         if (!email || !password) {
           showToastSync('Please enter email and password', 'warning');
           return;
+        } else if (!validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
+          return;
         }
 
         // Trigger action event
@@ -304,16 +362,125 @@
       }
 
       /**
-       * Login with Orchestrated Login
+       * Login with passkey using IDO in modal mode
        */
-      async function loginWithIDO() {
+      async function loginWithPasskeyModalIDO() {
+        const email = document.querySelector('input[type="email"]').value;
+        if (!email || !validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
+          return;
+        }
+
+        // Abort autofill first
+        await window.tsPlatform.webauthn.authenticate.autofill.abort();
+        try {
+          const webauthn_encoded_result = await window.tsPlatform.webauthn.authenticate.modal(email); // Optional username
+          disableButton(this);
+          await loginWithIDOPasskey(webauthn_encoded_result);
+        } catch (error) {
+          console.error(error);
+          showToastSync('Invalid user or passkey', 'warning');
+          // Re-start autofill/conditionalUI
+          initPasskeyAutofillIDO();
+          enableButton(this);
+        }
+      }
+
+      /**
+       * Enable passkey autofill using IDO
+       */
+      async function initPasskeyAutofillIDO() {
+        // Start autofill/conditionalUI if supported
+        const isAutofillSupported = await window.tsPlatform.webauthn.isAutofillSupported();
+        if (!isAutofillSupported) {
+          console.log('Autofill not supported');
+          return;
+        }
+        const btnIdoLoginPasskeys = document.getElementById('btn-ido-passkeys');
+
+        await window.tsPlatform.webauthn.authenticate.autofill.activate({
+          onSuccess: async (webauthn_encoded_result) => {
+            disableButton(btnIdoLoginPasskeys);
+            try {
+              await loginWithIDOPasskey(webauthn_encoded_result);
+            } catch (error) {
+              console.error(error);
+              showToastSync("Sorry, couldn't sign you in", 'warning');
+            }
+          },
+          onError: (error) => {
+            console.log('Passkey autofill error: ', error);
+            enableButton(btnIdoLoginPasskeys);
+            if (error.errorCode !== 'autofill_authentication_aborted') {
+              // The user doesn't exists or cannot login, redirect to register
+              console.log("User doesn't exist. Sign up first");
+              showToastSync("User doesn't exist. Sign up first", 'warning');
+            }
+          },
+        });
+      }
+
+      /**
+       * Prepare the UI to login with passkeys using IDO
+       */
+      async function prepareLoginWithPasskeysIDO() {
+        if (!(await window.tsPlatform.webauthn.isPlatformAuthenticatorSupported())) return;
+
+        const btnIdoLoginPasskeys = document.getElementById('btn-ido-passkeys');
+        const hrIdoSep = document.getElementById('hr-ido-sep');
+        btnIdoLoginPasskeys.classList.remove('hidden');
+        hrIdoSep.classList.remove('hidden');
+        const password = document.querySelector('input[type="password"]');
+        password.classList.add('hidden');
+        btnLogin.classList.add('hidden');
+
+        hrIdoSep.addEventListener('click', async () => {
+          password.classList.remove('hidden');
+          btnLogin.classList.remove('hidden');
+          btnIdoLoginPasskeys.classList.add('hidden');
+          hrIdoSep.classList.add('hidden');
+          await window.tsPlatform.webauthn.authenticate.autofill.abort();
+        });
+
+        // IDO passkey login with modal
+        btnIdoLoginPasskeys.addEventListener('click', loginWithPasskeyModalIDO);
+        // Start IDO passkey autofill
+        initPasskeyAutofillIDO();
+      }
+
+      /**
+       * Login with email and password using IDO
+       */
+      async function loginWithIDOPassword() {
         const email = document.querySelector('input[type="email"]').value;
         const password = document.querySelector('input[type="password"]').value;
         if (!email || !password) {
           showToastSync('Please enter email and password', 'warning');
           return;
+        } else if (!validateEmail(email)) {
+          showToastSync('Please enter a valid email', 'warning');
+          return;
         }
+        disableButton(btnLogin);
+        loginWithIDO({
+          username: email,
+          password: password,
+        });
+      }
 
+      /**
+       * Login with passkey using IDO
+       */
+      async function loginWithIDOPasskey(webauthn_encoded_result) {
+        loginWithIDO({
+          webauthnEncodedResult: webauthn_encoded_result,
+        });
+      }
+
+      /**
+       * Login with Orchestrated Login
+       */
+      async function loginWithIDO(journeyParams) {
         // Get instance of the orchestrator, configure handlers and start the journey
         const orchestrator = newOrchestrationController();
         const onSuccess = async (idoResponse) => {
@@ -339,6 +506,10 @@
         const onFailure = (idoResponse) => {
           console.error('Failed to login', idoResponse);
           showToastSync('Invalid user or credentials', 'warning');
+          // Enable buttons
+          enableButton(btnLogin);
+          enableButton(document.getElementById('btn-ido-passkeys'));
+          initPasskeyAutofillIDO();
         };
         const handleStepEmailOTP = (idoResponse) => {
           // hide login form and show OTP form
@@ -353,16 +524,60 @@
             orchestrator.submitResponseEmailOTP(passcode);
           });
         };
+        const handleStepPromotePasskeys = async (idoResponse) => {
+          // If WebAuthn is not supported, skip this step
+          const isBiometricsSupported = await window.tsPlatform.webauthn.isPlatformAuthenticatorSupported();
+          if (!isBiometricsSupported) {
+            orchestrator.submitResponseForm({ [Object.keys(idoResponse.data.form_schema.properties)[0]]: false });
+            return;
+          }
+
+          // hide login and OTP forms
+          document.getElementById('login-main').classList.add('hidden');
+          document.getElementById('login-stepup-otp').classList.add('hidden');
+          // show promote form
+          document.getElementById('login-promote-passkeys').classList.remove('hidden');
+
+          document.getElementById('btn-promote-continue').addEventListener('click', () => {
+            // Call IDO backend to promote passkeys
+            orchestrator.submitResponseForm({ [Object.keys(idoResponse.data.form_schema.properties)[0]]: true });
+          });
+          document.getElementById('btn-promote-cancel').addEventListener('click', () => {
+            // Call IDO backend to skip passkeys
+            orchestrator.submitResponseForm({ [Object.keys(idoResponse.data.form_schema.properties)[0]]: false });
+          });
+        };
+        const handleStepPasskeysRegistration = async (idoResponse) => {
+          let data = idoResponse.data;
+          // Register passkey on the device
+          try {
+            const encodedResult = await window.tsPlatform.webauthn.register(data.username, {
+              allowCrossPlatformAuthenticators: data.allow_cross_platform_authenticators,
+              registerAsDiscoverable: data.register_as_discoverable,
+              displayName: data.display_name,
+            });
+            // Submit the enconded result from WebAuthn SDK module to the journey to
+            // complete registration
+            orchestrator.submitResponseForm({
+              webauthn_encoded_result: encodedResult,
+            });
+          } catch (error) {
+            console.error('Failed to register passkey', error);
+            // Proceed without passkey registration
+            orchestrator.submitResponseForm({
+              webauthn_encoded_result: null,
+            });
+          }
+        };
         orchestrator.setHandlers({
           handleStepSuccess: onSuccess,
           handleStepRejection: onFailure,
           handleStepEmailOTP: handleStepEmailOTP,
+          handleStepPromotePasskeys: handleStepPromotePasskeys,
+          handleStepPasskeysRegistration: handleStepPasskeysRegistration,
         });
 
-        orchestrator.startJourney(import.meta.env.VITE_TS_JOURNEY_LOGIN, {
-          username: document.querySelector('input[type="email"]').value,
-          password: document.querySelector('input[type="password"]').value,
-        });
+        orchestrator.startJourney(import.meta.env.VITE_TS_JOURNEY_LOGIN, journeyParams);
       }
     </script>
   </body>

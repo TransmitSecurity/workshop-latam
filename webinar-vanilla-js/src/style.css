@@ -16,6 +16,9 @@
   .ina-btn-white {
     @apply border text-lg font-semibold pt-2 pb-1 leading-relaxed flex justify-center items-center focus:ring-1 focus:outline-none w-full rounded-sm;
   }
+  .ina-btn-disabled {
+    @apply bg-gray-300 hover:bg-gray-300 text-gray-500 cursor-not-allowed;
+  }
   .ina-inp-txt-primary {
     @apply w-full px-8 py-3 rounded-sm font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white;
   }
@@ -280,3 +283,17 @@ button.warning-toast {
   }
 }
 /* TOAST END */
+
+/* Splash image */
+.rotate {
+  animation: rotation 10s infinite linear;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}

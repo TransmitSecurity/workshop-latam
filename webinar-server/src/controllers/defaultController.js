@@ -33,14 +33,22 @@ const auth = async (userid, password) => {
 /**
  * Create a new user with a given userid and password
  * @param {String} userid
- * @param {String} password
+ * @param {String} password (optional)
  * @returns JWT token for the user
  */
 const register = async (userid, password) => {
   try {
-    const hash = await bcryptHashSync(password);
-    console.log({ userid, password: hash });
-    await dbService.addUser({ userid, password: hash });
+    const user = { userid };
+    if (password) {
+      const hash = await bcryptHashSync(password);
+      user.password = hash;
+    }
+    console.log(`Creating user: ${JSON.stringify(user)}`);
+    // NOTE: For simplicity, we are not checking for duplicate user entries
+    // In a production system, you would check if the user already exists
+    // and in case of a duplicate, return an error to the client offering
+    // mechanisms to recover the account, contact support, etc.
+    await dbService.addUser(user);
 
     const token = signSessionJWT(userid);
     console.log(`User created successfully: ${userid}, token: ${token}`);
@@ -124,7 +132,7 @@ const registerExternal = async (userid, password, orchestrationToken) => {
       throw new Error(ERROR_REGISTRATION);
     }
 
-    return register(userid, password);
+    return await register(userid, password);
   } catch (error) {
     console.log(`Orchestration verification error: ${error.message}`);
     throw new Error(ERROR_REGISTRATION);

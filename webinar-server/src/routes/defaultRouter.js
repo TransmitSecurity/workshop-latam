@@ -134,10 +134,9 @@ defaultRouter.post('/auth/external', async (req, res) => {
 
 // Endpoint used when the user is created by an external service
 // Implemented to be used after the user has been created by Transmit Mosaic Orchestration Service
-// TODO: implement and test
 defaultRouter.post('/register/external', async (req, res) => {
   const { email, password, token: externalToken } = req.body;
-  if (!email || !password || !externalToken) return res.status(400).json({ message: 'Invalid request' });
+  if (!email || !externalToken) return res.status(400).json({ message: 'Invalid request' });
   try {
     // Validate the token through the controller and
     // generate JWT token for the user

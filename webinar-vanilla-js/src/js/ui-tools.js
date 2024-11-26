@@ -242,3 +242,43 @@ export const getOtpFromInputs = (inputsPrefix, otpLength) => {
   ).join('');
   return otp;
 };
+
+/***********************/
+/*** BUTTONS         ***/
+/***********************/
+const DISABLED_CLASS = 'btn-disabled-holder';
+const LOADING_CLASS = 'btn-loading-holder';
+export const disableButton = (button, msg = 'Loading...') => {
+  button.disabled = true;
+  button.classList.add('ina-btn-disabled');
+  button.childNodes.forEach((node) => {
+    if (node.nodeType !== 3) {
+      node.classList.add('hidden', DISABLED_CLASS);
+    }
+  });
+  const loading = document.createElement('span');
+  loading.classList.add(LOADING_CLASS);
+  loading.innerHTML = msg;
+  button.appendChild(loading);
+};
+export const enableButton = (button) => {
+  button.disabled = false;
+  button.classList.remove('ina-btn-disabled');
+  button.childNodes.forEach((node) => {
+    if (node.nodeType !== 3) {
+      if (node.classList.contains(LOADING_CLASS)) {
+        node.remove();
+      } else if (node.classList.contains(DISABLED_CLASS)) {
+        node.classList.remove('hidden', DISABLED_CLASS);
+      }
+    }
+  });
+};
+
+/***********************/
+/*** Validation        */
+/***********************/
+export const validateEmail = (email) => {
+  const re = /\S+@\S+\.\S+/;
+  return re.test(email);
+};

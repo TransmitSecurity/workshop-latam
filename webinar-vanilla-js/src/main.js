@@ -2,7 +2,16 @@ import './style.css';
 
 // UI Tools
 import * as uiTools from './js/ui-tools.js';
-export const { showModal, addModal, showToastSync, animateOtpInputs, getOtpFromInputs } = uiTools;
+export const {
+  showModal,
+  addModal,
+  showToastSync,
+  animateOtpInputs,
+  getOtpFromInputs,
+  disableButton,
+  enableButton,
+  validateEmail,
+} = uiTools;
 
 // Flags Helper
 import * as flags from './js/flags-helper.js';
@@ -31,13 +40,47 @@ export const {
 } = storage;
 
 /**
- * Clean logout
- * Deletes local user data and redirects to home
+ * Execute logout in IDO
  */
-const cleanLogout = () => {
+const idoLogout = async (execAfterwards) => {
+  const orchestrator = newOrchestrationController();
+  const onSuccess = (idoResponse) => {
+    console.log('Logout success', idoResponse);
+    execAfterwards();
+  };
+  const onFailure = (idoResponse) => {
+    console.error('Failed to logout', idoResponse);
+    showToastSync('Logout failed', 'warning');
+    execAfterwards();
+  };
+  orchestrator.setHandlers({
+    handleStepSuccess: onSuccess,
+    handleStepRejection: onFailure,
+  });
+  await orchestrator.startJourney(import.meta.env.VITE_TS_JOURNEY_LOGOUT);
+};
+
+/**
+ * Clear local user data and redirect to home
+ */
+const clearAndRedirect = () => {
   // Clear local user data
   localStorage.removeItem(STORE_KEY);
   window.location.href = '/';
+};
+
+/**
+ * Clean logout
+ * Deletes local user data and redirects to home
+ */
+// TODO: check if call cleanLogout with await
+const cleanLogout = async () => {
+  if (checkFlag('VITE_FLAG_LOGOUT_USE_IDO')) {
+    // Execute logout in IDO
+    await idoLogout(clearAndRedirect);
+  } else {
+    clearAndRedirect();
+  }
 };
 
 /**
@@ -48,13 +91,13 @@ export const logout = async () => {
   // Clear DRS user
   if (window.tsPlatform?.drs) {
     await drsClearUser();
-    cleanLogout();
+    await cleanLogout();
   } else {
     loadAndInitTsSdk(async () => {
       try {
         await drsClearUser();
       } catch (ignored) {} // eslint-disable-line no-unused-vars, no-empty
-      cleanLogout();
+      await cleanLogout();
     });
   }
 };
