@@ -1,7 +1,9 @@
 import express from 'express';
 import { authMiddleware } from '../helpers/middlewares.js';
 import { dataArray, TAX_RATE } from '../services/artService.js';
+import riskController from '../controllers/riskController.js';
 import dbService from '../services/dbService.js';
+import { REPORT_RESULTS } from '../helpers/constants.js';
 
 const artRouter = express.Router();
 
@@ -42,23 +44,41 @@ artRouter.post('/pre-checkout', authMiddleware, (req, res) => {
 });
 
 artRouter.post('/checkout', authMiddleware, async (req, res) => {
-  const { purchase, cart } = req.body;
+  const { purchase, cart, actionToken } = req.body;
 
-  // Validate the purchase order is correct
-  for (let item of Object.values(cart)) {
-    const { id, price } = item;
-    const itemData = dataArray.find((data) => data.id === Number(id));
-    if (itemData.price !== price) {
-      return res.status(400).json({ message: 'Invalid cart' });
+  try {
+    // Manage risk recommendation for purchase
+    const recommendation = await riskController.manageRiskPurchase(actionToken);
+    // Store the recommendation in the database
+    await dbService.saveLastRiskRecommendation(req.locals.userid, recommendation);
+
+    // Validate the purchase order is correct
+    for (let item of Object.values(cart)) {
+      const { id, price } = item;
+      const itemData = dataArray.find((data) => data.id === Number(id));
+      if (itemData.price !== price) {
+        // Report the action result
+        await riskController.reportCheckoutActionResult(actionToken, REPORT_RESULTS.FAILURE, req.locals.userid);
+
+        return res.status(400).json({ message: 'Invalid cart' });
+      }
     }
-  }
-  // Store the order in the database
-  await dbService.addPurchase(req.locals.userid, {
-    purchase,
-    cart,
-  });
+    // Report the action result
+    await riskController.reportCheckoutActionResult(actionToken, REPORT_RESULTS.SUCCESS, req.locals.userid);
 
-  res.status(200).json({ message: 'Checkout successful' });
+    // Store the order in the database
+    await dbService.addPurchase(req.locals.userid, {
+      purchase,
+      cart,
+    });
+
+    res.status(200).json({ message: 'Checkout successful' });
+  } catch (error) {
+    // Report the action result
+    await riskController.reportCheckoutActionResult(actionToken, REPORT_RESULTS.FAILURE, req.locals.userid);
+
+    return res.status(401).json({ message: error.message });
+  }
 });
 
 export default artRouter;

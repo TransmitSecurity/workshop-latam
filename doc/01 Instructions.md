@@ -2,6 +2,10 @@
 
 ## SESSION 1: WebAuthn/Passkeys
 
+The code to follow along the webinar can be found on this repo:
+  - Initial state: Branch `step1-starter` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step1-starter))
+  - Final code: Branch `step1-final` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step1-final))
+
 ### S1 - 0. Set up your environment
 1. You are going to need [nodejs](https://nodejs.org). Install it following the instructions [here](https://nodejs.org/en/download/package-manager).
 2. Get the starter code for the demo application we are going to use:
@@ -22,7 +26,6 @@
   npm start
   ```
 1. Browse to `http://localhost:3001`, you should see the login page for our brand new (and fake) **<span style="color:purple">"Artificial Intelligence-created NFT Art Site"</span>** (aka **AI NFT Art**)
-
 
 ### S1 - 1. Get your credentials
 Your hosts in the session will provide the instructions for this step.
@@ -734,7 +737,7 @@ storeSaveUser(data.email, data.token);
 ``` 
 This way we use the `userid` value from server.
 
-Browse to `http://localhost:3001`, but this time, click on the *input* where you can type your email and a modal should appear with a break down of the passkeys you have already created for this application. Click the one you created and marvel at the great experience 💃
+Browse to `http://localhost:3001`, but this time, click on the _input_ where you can type your email and a modal should appear with a break down of the passkeys you have already created for this application. Click the one you created and marvel at the great experience 💃
 
 And now yes, you have your passwordless site (with the password login still active for the devices that cannot use Passkeys). Congratulations!!! 🍻🍻🍻🍻🍻🍻
 

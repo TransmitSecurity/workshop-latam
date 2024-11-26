@@ -278,7 +278,15 @@
     </div>
     <script type="module" src="/main.js"></script>
     <script type="module">
-      import { cartUpdateDisplay, storeGetUser, storeSaveUser, showToastSync, showModal, addModal } from './main.js';
+      import {
+        cartUpdateDisplay,
+        storeGetUser,
+        storeSaveUser,
+        showToastSync,
+        showModal,
+        addModal,
+        RISK_ACTIONS,
+      } from './main.js';
       const user = storeGetUser();
       const token = user?.token;
 
@@ -380,6 +388,20 @@
 
         const form = document.querySelector('form');
         if (form.reportValidity()) {
+          const totalAmount = Number(document.getElementById('total').innerHTML);
+          // Trigger action event: checkout
+          const actionResponse = await window.tsPlatform.drs.triggerActionEvent(RISK_ACTIONS.CHECKOUT, {
+            transactionData: {
+              amount: totalAmount,
+              currency: 'USD',
+              reason: `Purchased ${Object.keys(user.cart).reduce((acc, key) => acc + user.cart[key].quantity, 0)} NFTs for ${totalAmount} USD.`,
+              transactionDate: Date.now(),
+              payer: {
+                name: user.userid,
+              },
+            },
+          });
+
           // Simulate purchase verification
           await showModal(5);
 
@@ -395,8 +417,10 @@
             body: JSON.stringify({
               purchase: data,
               cart: user.cart,
+              actionToken: actionResponse.actionToken,
             }),
           });
+
           if (resp.status !== 200) {
             console.error('Failed to checkout');
             const data = await resp.json();

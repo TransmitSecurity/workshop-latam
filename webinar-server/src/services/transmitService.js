@@ -5,6 +5,9 @@ import {
   ERROR_RISK_GET_RECOMMENDATION,
   ERROR_PASSKEY_AUTHENTICATION,
   ERROR_PASSKEY_REGISTRATION,
+  ERROR_RISK_REPORT_ACTION,
+  REPORT_CHALLENGE_TYPE,
+  REPORT_RESULTS,
 } from '../helpers/constants.js';
 
 /**
@@ -157,5 +160,66 @@ export const getDRSRecommendation = async (actionToken, riskClientAccessToken) =
   } catch (error) {
     console.error(`${ERROR_RISK_GET_RECOMMENDATION}: ${error.message}`);
     throw new Error(ERROR_RISK_GET_RECOMMENDATION);
+  }
+};
+
+/**
+ * Report DRS Action Result
+ * @param {String} actionToken DRS ActionToken
+ * @param {String} result Result of the action
+ * @param {String} riskClientAccessToken ClientAccessToken for the DRS API
+ * @param {String} userId (Optional) User Identifier
+ * @param {String} challengeType (Optional) Challenge Type
+ * @returns action report JSON response
+ */
+export const reportDRSActionResult = async (
+  actionToken,
+  result,
+  riskClientAccessToken,
+  userId = null,
+  challengeType = null,
+) => {
+  // Validate result and challengeType
+  if (!Object.values(REPORT_RESULTS).includes(result)) {
+    console.error(`${ERROR_RISK_REPORT_ACTION}: Invalid result`);
+    throw new Error(ERROR_RISK_REPORT_ACTION);
+  }
+  if (challengeType && !Object.values(REPORT_CHALLENGE_TYPE).includes(challengeType)) {
+    console.error(`${ERROR_RISK_REPORT_ACTION}: Invalid challenge type`);
+    throw new Error(ERROR_RISK_REPORT_ACTION);
+  }
+
+  // Report action result
+  try {
+    const body = {
+      action_token: actionToken,
+      result: result,
+    };
+    if (userId) body.user_id = userId;
+    if (challengeType) body.challenge_type = challengeType;
+
+    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/risk/v1/action/result`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${riskClientAccessToken}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (resp.status === 201) {
+      console.log(
+        `Action result reported: ${result} for ${actionToken} [user: ${userId}, challenge: ${challengeType}]`,
+      );
+      const data = await resp.json();
+      console.log(`Action reported: ${JSON.stringify(data)}`); // for visibility only
+      return data;
+    } else {
+      console.error(`Error reporting action result: ${resp.status}`);
+      throw new Error(ERROR_RISK_REPORT_ACTION);
+    }
+  } catch (error) {
+    console.error(`${ERROR_RISK_REPORT_ACTION}: ${error.message}`);
+    throw new Error(ERROR_RISK_REPORT_ACTION);
   }
 };
