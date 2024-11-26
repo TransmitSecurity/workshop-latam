@@ -5,7 +5,7 @@ const TS_SDK_SCRIPT_ID = 'ts-platform-script';
 /**
  * Dynamically load SDK
  *  <script
- *    src="https://platform-websdk.transmitsecurity.io/platform-websdk/1.x/ts-platform-websdk.js"
+ *    src="https://platform-websdk.transmitsecurity.io/platform-websdk/latest/ts-platform-websdk.js"
  *    defer="true"
  *    id="ts-platform-script"></script>
  */
@@ -30,6 +30,7 @@ const initTsSdk = async () => {
     await window.tsPlatform.initialize({
       clientId: import.meta.env.VITE_TS_CLIENT_ID,
       webauthn: { serverPath: import.meta.env.VITE_TS_BASE_URL },
+      ido: { serverPath: `${import.meta.env.VITE_TS_BASE_URL}/ido` },
     });
     console.log('TS Platform SDK initialized');
   } catch (error) {

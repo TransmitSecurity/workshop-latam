@@ -12,6 +12,10 @@ export const ERROR_RISK_INVALID_ACTION_TOKEN = `${ERROR_RISK_GET_RECOMMENDATION}
 export const ERROR_RISK_REPORT_ACTION = 'Error reporting action';
 export const ERROR_RISK_DENY = 'Risk recommendation is to deny';
 
+export const ERROR_IDO_INVALID_TOKEN = 'Invalid IDO token';
+export const ERROR_IDO_INVALID_TOKEN_ISSUER = 'Invalid IDO token issuer';
+export const ERROR_IDO_TOKEN_EXPIRED = 'IDO token expired';
+
 export const RECOMMENDATIONS = {
   DENY: 'DENY',
   CHALLENGE: 'CHALLENGE',
@@ -36,3 +40,5 @@ export const REPORT_CHALLENGE_TYPE = {
   PASSWORD: 'password',
   PASSKEY: 'passkey',
 };
+
+export const IDO_TOKEN_ISSUER = 'TS';

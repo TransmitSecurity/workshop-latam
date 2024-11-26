@@ -15,4 +15,11 @@ JWT_TYPE=Bearer
 VITE_TS_CLIENT_ID=<your_transmit_app_client_id>
 TS_CLIENT_SECRET=<your_transmit_app_client_secret>
 VITE_TS_BASE_URL=https://api.transmitsecurity.io
-VITE_TS_SDK_URL=https://platform-websdk.transmitsecurity.io/platform-websdk/1.x/ts-platform-websdk.js
+VITE_TS_SDK_URL=https://platform-websdk.transmitsecurity.io/platform-websdk/latest/ts-platform-websdk.js
+
+## Orchestration: Journeys
+VITE_TS_JOURNEY_LOGIN=AINFTArt-Login
+
+# FLAGS
+VITE_FLAG_DISABLE_PASSKEYS=true
+VITE_FLAG_LOGIN_USE_IDO=true

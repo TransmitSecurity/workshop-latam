@@ -115,6 +115,23 @@ defaultRouter.post('/webauthn/register', async (req, res) => {
   }
 });
 
+// Endpoint used when the user is already authenticated by an external service
+// Implemented to be used after the user has been authenticated by Transmit Mosaic Orchestration Service
+defaultRouter.post('/auth/external', async (req, res) => {
+  // Get IDO JWT Token from the request
+  const externalToken = req.body.token;
+  if (!externalToken) return res.status(400).json({ message: 'Invalid request' });
+  try {
+    // Validate the token through the controller and
+    // generate JWT token for the user
+    const { token, userId } = await defaultCtlr.verifyOrchestrationToken(externalToken);
+
+    return res.status(200).json({ message: 'success', token, userId });
+  } catch (error) {
+    return res.status(401).json({ message: error.message });
+  }
+});
+
 // Verification endpoint that checks if a given JWT token is valid
 // For debugging purposes, the token is passed in the Authorization header
 defaultRouter.post('/verify', authMiddleware, (req, res) => {

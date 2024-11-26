@@ -210,3 +210,35 @@ export const addProfileDropdown = (username, logout) => {
     document.getElementById('btn-sign-out').addEventListener('click', logout);
   }
 };
+
+/***********************/
+/*** OTP utils       ***/
+/***********************/
+export const animateOtpInputs = (inputsPrefix, otpLength, elemIdToFocusArter) => {
+  const otpInputs = document.querySelectorAll(`input[id^="${inputsPrefix}"]`);
+  otpInputs.forEach((input, index) => {
+    input.addEventListener('input', (e) => {
+      // if event key is backspace and the input is empty, focus on the previous input
+      if (e.inputType === 'deleteContentBackward') {
+        if (index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      } else {
+        if (index < otpLength - 1) {
+          otpInputs[index + 1].focus();
+        } else {
+          const elemToFocus = document.getElementById(elemIdToFocusArter);
+          elemToFocus?.focus();
+        }
+      }
+    });
+  });
+};
+
+export const getOtpFromInputs = (inputsPrefix, otpLength) => {
+  const otp = Array.from(
+    { length: otpLength },
+    (_, i) => document.getElementById(`${inputsPrefix}${i + 1}`).value,
+  ).join('');
+  return otp;
+};

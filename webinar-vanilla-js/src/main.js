@@ -2,7 +2,7 @@ import './style.css';
 
 // UI Tools
 import * as uiTools from './js/ui-tools.js';
-export const { showModal, addModal, showToastSync } = uiTools;
+export const { showModal, addModal, showToastSync, animateOtpInputs, getOtpFromInputs } = uiTools;
 
 // Flags Helper
 import * as flags from './js/flags-helper.js';
@@ -11,6 +11,9 @@ export const { checkFlag } = flags;
 // Transmit Helper
 import * as transmit from './js/transmit-helper.js';
 export const { loadAndInitTsSdk, drsClearUser, RISK_ACTIONS } = transmit;
+
+import * as transmitOrchestration from './js/transmit-ido-helper.js';
+export const { newOrchestrationController } = transmitOrchestration;
 
 // Local Storage & Cart
 import * as storage from './js/local-storage.js';
