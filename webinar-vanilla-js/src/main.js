@@ -107,8 +107,12 @@ const ROUTES = [
   // Add Profile Dropdown
   if (route && route.auth) {
     let username = storeGetUser().userid;
+    // Hack to remove domain and email alias
     if (username?.indexOf('@') > 0) {
       username = username.split('@')[0];
+      if (username?.indexOf('+') > 0) {
+        username = username.split('+')[0];
+      }
     }
     uiTools.addProfileDropdown(username, logout);
   }

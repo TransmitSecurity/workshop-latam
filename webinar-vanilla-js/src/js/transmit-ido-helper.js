@@ -7,7 +7,7 @@ export const newOrchestrationController = (handlers) => {
 class OrchestrationController {
   handlerWrapper(idoServiceResponse, handle) {
     console.group('🐙 STEP: ', idoServiceResponse.journeyStepId);
-    console.log(idoServiceResponse);
+    console.log(JSON.stringify(idoServiceResponse, null, 2)); // improve visibility in the console
     handle.call(this, idoServiceResponse);
     console.groupEnd();
   }

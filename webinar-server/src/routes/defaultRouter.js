@@ -47,7 +47,7 @@ defaultRouter.post('/register', async (req, res) => {
     const recommendation = await riskController.manageRiskRegistration(actionToken);
 
     // Register the user with email and password
-    const token = await defaultCtlr.register(email, password);
+    const { token, userId } = await defaultCtlr.register(email, password);
 
     // Report the action result
     await riskController.reportSignUpPasswordActionResult(actionToken, REPORT_RESULTS.SUCCESS, email);
@@ -55,7 +55,7 @@ defaultRouter.post('/register', async (req, res) => {
     // Store the recommendation in the database
     await dbService.saveLastRiskRecommendation(email, recommendation);
 
-    return res.status(200).json({ message: 'success', token });
+    return res.status(200).json({ message: 'success', token, userId });
   } catch (error) {
     // Report the action result
     await riskController.reportSignUpPasswordActionResult(actionToken, REPORT_RESULTS.FAILURE, email);
@@ -124,7 +124,26 @@ defaultRouter.post('/auth/external', async (req, res) => {
   try {
     // Validate the token through the controller and
     // generate JWT token for the user
-    const { token, userId } = await defaultCtlr.verifyOrchestrationToken(externalToken);
+    const { token, userId } = await defaultCtlr.authExternal(externalToken);
+
+    return res.status(200).json({ message: 'success', token, userId });
+  } catch (error) {
+    return res.status(401).json({ message: error.message });
+  }
+});
+
+// Endpoint used when the user is created by an external service
+// Implemented to be used after the user has been created by Transmit Mosaic Orchestration Service
+// TODO: implement and test
+defaultRouter.post('/register/external', async (req, res) => {
+  const { email, password, token: externalToken } = req.body;
+  if (!email || !password || !externalToken) return res.status(400).json({ message: 'Invalid request' });
+  try {
+    // Validate the token through the controller and
+    // generate JWT token for the user
+    const { token, userId } = await defaultCtlr.registerExternal(email, password, externalToken);
+
+    // TODO: Pending -> Report the action result in IDO when it's working
 
     return res.status(200).json({ message: 'success', token, userId });
   } catch (error) {

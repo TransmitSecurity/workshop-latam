@@ -242,7 +242,6 @@ export const validateIDOToken = async (token, idoClientAccessToken) => {
   if (!idoClientAccessToken) {
     idoClientAccessToken = await getClientAccessToken();
   }
-
   // Verify the token signature, return token or error
   const resp = await fetch(
     `${process.env.VITE_TS_BASE_URL}/ido/api/v2/token/introspect?clientId=${process.env.VITE_TS_CLIENT_ID}`,

@@ -19,7 +19,9 @@ VITE_TS_SDK_URL=https://platform-websdk.transmitsecurity.io/platform-websdk/late
 
 ## Orchestration: Journeys
 VITE_TS_JOURNEY_LOGIN=AINFTArt-Login
+VITE_TS_JOURNEY_REGISTER=AINFTArt-Register
 
 # FLAGS
 VITE_FLAG_DISABLE_PASSKEYS=true
 VITE_FLAG_LOGIN_USE_IDO=true
+VITE_FLAG_REGISTER_USE_IDO=true

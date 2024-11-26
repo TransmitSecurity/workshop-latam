@@ -16,7 +16,7 @@
             ><span class="text-slate-500">T</span>
             <span class="text-3xl ina-logo text-indigo-600">Art</span>
           </h1>
-          <div class="mt-12 flex flex-col items-center">
+          <div id="signup-main" class="mt-12 flex flex-col items-center">
             <h2 class="ina-title mb-8">Sign up</h2>
             <div class="w-full flex-1">
               <!-- TODO: Add social login
@@ -66,6 +66,44 @@
               </div>
             </div>
           </div>
+          <div id="signup-stepup-otp" class="mt-12 flex flex-col items-center hidden">
+            <h2 class="ina-title mb-8">Email Verification</h2>
+            <div class="w-full flex-1">
+              <div class="mx-auto max-w-xs">
+                <div class="mt-3 text-center text-sm text-gray-600">
+                  Enter the 6-digit verification code sent to your email.
+                </div>
+                <div class="my-10 w-full flex flex-row justify-center">
+                  <input id="email-otp-1" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-2" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-3" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-4" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-5" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                  <input id="email-otp-6" type="text" class="ina-inp-txt-single-digit" pattern="\d*" maxlength="1" />
+                </div>
+                <button id="btn-otp-continue" class="ina-btn-primary mt-5">
+                  <svg
+                    class="w-6 h-6 -ml-2"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                  </svg>
+                  <span class="ml-3"> Continue </span>
+                </button>
+                <a aria-label="back-to-products" class="ina-btn-white mt-5 text-gray-400" href="/sign-up.html">
+                  <img
+                    src="/icon-arrow-left.svg"
+                    alt="back"
+                    class="svg-inline--fa fa-arrow-left fa-w-14 w-4 mr-2 inline-flex" />
+                  Back
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="flex-1 bg-indigo-100 text-center hidden lg:flex">
           <div
@@ -80,10 +118,25 @@
 
     <script type="module" src="/main.js"></script>
     <script type="module">
-      import { checkFlag, loadAndInitTsSdk, storeSaveUser, showToastSync, RISK_ACTIONS } from './main.js';
+      import {
+        checkFlag,
+        loadAndInitTsSdk,
+        storeSaveUser,
+        showToastSync,
+        RISK_ACTIONS,
+        newOrchestrationController,
+        animateOtpInputs,
+        getOtpFromInputs,
+      } from './main.js';
 
       const btnSignup = document.getElementById('btn-signup');
-      btnSignup.addEventListener('click', signUpWithPassword);
+      btnSignup.addEventListener('click', () => {
+        if (checkFlag('VITE_FLAG_REGISTER_USE_IDO')) {
+          signUpWithIDO();
+        } else {
+          signUpWithPassword();
+        }
+      });
 
       /**
        * Initialize SDK and make required changes in the UI for passwordless
@@ -112,6 +165,12 @@
       } else {
         loadAndInitTsSdk(letsGoPasswordless);
       }
+
+      // TODO: Remove (or not :P) - helper for demos
+      document.querySelector('h2').addEventListener('click', () => {
+        document.querySelector('input[type="email"]').value = 'demo@demo.demo';
+        document.querySelector('input[type="password"]').value = 'Demo1234!';
+      });
 
       /**
        * Registers a user with a passkey
@@ -183,6 +242,68 @@
         const data = await resp.json();
         storeSaveUser(email, data.token);
         window.location.href = '/home.html';
+      }
+
+      /**
+       * Registers a user with IDO
+       */
+      async function signUpWithIDO() {
+        const email = document.querySelector('input[type="email"]').value;
+        const password = document.querySelector('input[type="password"]').value;
+        if (!email || !password) {
+          showToastSync('Please enter email and password', 'warning');
+          return;
+        }
+
+        // Get instance of the orchestrator, configure handlers and start the journey
+        const orchestrator = newOrchestrationController();
+        const onSuccess = async (idoResponse) => {
+          // On successful journey completion, send idoResponse.token to backend
+          // to complete authentication and grant access
+          const resp = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/register/external`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, token: idoResponse.token }),
+          });
+          if (resp.status !== 200) {
+            console.error('Failed to signup');
+            showToastSync('Registration failed', 'warning');
+            return;
+          }
+
+          const data = await resp.json();
+          storeSaveUser(data.userId, data.token);
+          window.location.href = '/home.html';
+        };
+        const onFailure = (idoResponse) => {
+          console.error('Failed to signup', idoResponse);
+          showToastSync('Registration failed', 'warning');
+        };
+        const handleStepEmailOTP = (idoResponse) => {
+          // hide registration form and show OTP form
+          document.getElementById('signup-main').classList.add('hidden');
+          document.getElementById('signup-stepup-otp').classList.remove('hidden');
+
+          animateOtpInputs('email-otp-', 6, 'btn-otp-continue');
+          // Add listener to OTP form continue button
+          document.getElementById('btn-otp-continue').addEventListener('click', () => {
+            const passcode = getOtpFromInputs('email-otp-', 6);
+            // Call IDO backend with otp to continue journey
+            orchestrator.submitResponseEmailOTP(passcode);
+          });
+        };
+        orchestrator.setHandlers({
+          handleStepSuccess: onSuccess,
+          handleStepRejection: onFailure,
+          handleStepEmailOTP: handleStepEmailOTP,
+        });
+
+        orchestrator.startJourney(import.meta.env.VITE_TS_JOURNEY_REGISTER, {
+          username: document.querySelector('input[type="email"]').value,
+          password: document.querySelector('input[type="password"]').value,
+        });
       }
     </script>
   </body>
