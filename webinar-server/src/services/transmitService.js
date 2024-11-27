@@ -42,7 +42,7 @@ export const getClientAccessToken = async () => {
  */
 export const registerPasskey = async (webauthnEncodedResult, externalUserId, clientAccessToken) => {
   try {
-    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/v1/auth/webauthn/external/register`, {
+    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/cis/v1/auth/webauthn/external/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export const registerPasskey = async (webauthnEncodedResult, externalUserId, cli
  */
 export const authPasskey = async (webauthnEncodedResult, clientAccessToken) => {
   try {
-    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/v1/auth/webauthn/authenticate`, {
+    const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/cis/v1/auth/webauthn/authenticate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export const authPasskey = async (webauthnEncodedResult, clientAccessToken) => {
  */
 const getJwks = async () => {
   // No error handling for the sake of simplicity
-  const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/oidc/jwks`, {
+  const resp = await fetch(`${process.env.VITE_TS_BASE_URL}/cis/oidc/jwks`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

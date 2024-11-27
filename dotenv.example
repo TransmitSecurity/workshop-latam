@@ -16,4 +16,4 @@ JWT_TYPE=Bearer
 ### Transmit configuration ###
 VITE_TS_CLIENT_ID=<your_transmit_app_client_id>
 TS_CLIENT_SECRET=<your_transmit_app_client_secret>
-VITE_TS_BASE_URL=https://api.transmitsecurity.io/cis
+VITE_TS_BASE_URL=https://api.transmitsecurity.io
