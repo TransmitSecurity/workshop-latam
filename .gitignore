@@ -1,5 +1,6 @@
 .env
 _*
 .vscode/settings.json
+.DS_Store
 node_modules/
 webinar-server/src/db/database.json
