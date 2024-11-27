@@ -14,17 +14,18 @@ Exploring non-phisheable next generation passwordless authentication. [Here are 
 Add risk context to user actions [Here are the instructions](./doc/02%20Instructions.md).
 
 - Session Recording of the Webinar on Sept. 12th, 2024 ("**Integrando Anti-Fraude en tu aplicación**") is [available here](https://transmitsecurity.zoom.us/webinar/register/WN_WE_rexfURsucvhoHvHxIeg#/registration).
-- The slides used in the presentation can be [found here](https://content.transmitsecurity.com/hubfs/Online%20Workshops/Integrando%20Anti-Fraude%20en%20tu%20aplicación%20-%20Workshop%20con%20Transmit%20Security.pdf)
+- The slides used in the presentation can be [found here](https://content.transmitsecurity.com/hubfs/Online%20Workshops/Integrando%20Anti-Fraude%20en%20tu%20aplicación%20-%20Workshop%20con%20Transmit%20Security.pdf).
 - The code to follow along the webinar can be found on this repo:
     - Initial state: Branch `step2-starter` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step2-starter))
     - Final code, including some code clean-up to allow for better execution when following the webinar offline: Branch `step2-final-refactor` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step2-final-refactor))
 
 ## SESSION 3: Orchestrate your risk decisions
-Make your customers' journeys adaptive based on risk context in a centralized way. The final instructions will be linked here when the webinar is complete.
+Make your customers' journeys adaptive based on risk context in a centralized way. [Here are the instructions](./doc/03%20Instructions.md).
 
-- Session Recording of the Webinar on Nov. 26th, 2024 (**Orquesta los Journeys de Identidad de tus Clientes**) will be posted here after the webinar is completed
-- The slides used in the presentation will be posted here after the webinar is completed
+- Session Recording of the Webinar on Nov. 26th, 2024 (**Orquesta los Journeys de Identidad de tus Clientes**) is [available here](https://transmitsecurity.zoom.us/webinar/register/WN_y33reU7xTGSGACA8Ug3mYw).
+- The slides used in the presentation can be [found here](https://content.transmitsecurity.com/hubfs/Online%20Workshops/Orquesta%20los%20Journeys%20de%20Identidad%20de%20tus%20Clientes%20-%20Workshop%20con%20Transmit%20Security.pdf).
 - The code to follow along the webinar can be found on this repo:
-    - Initial state (login): Branch `step3-01-login` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-01-login))
+    - Initial state (before starting integration): Branch `step3-starter` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-starter))
+    - Intermediate state (Login): Branch `step3-01-login` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-01-login))
     - Intermediate state (Registration): Branch `step3-03-register` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-02-register))
     - Final code: Branch `step3-final` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-final))
