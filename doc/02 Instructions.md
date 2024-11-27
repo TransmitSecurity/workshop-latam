@@ -4,6 +4,10 @@
 
 Hi again, this is the second webinar in this series. If you already watched (or even did 🙌) the [first one](./01%20Instructions.md), some of these steps could not be needed for you, so look them over just in case and let's add some contextual risk information to our site. 💯
 
+The code to follow along the webinar can be found on this repo:
+  - Initial state: Branch `step2-starter` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step2-starter))
+  - Final code, including some code clean-up to allow for better execution when following the webinar offline: Branch `step2-final-refactor` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step2-final-refactor))
+
 ### S2 - 0. Set up your environment
 1. You are going to need [nodejs](https://nodejs.org). Install it following the instructions [here](https://nodejs.org/en/download/package-manager).
 2. Get the starter code for the demo application we are going to use:
@@ -25,7 +29,6 @@ Hi again, this is the second webinar in this series. If you already watched (or 
   npm start
   ```
 6. Browse to `http://localhost:3001`, you should see the login page for our brand new (and fake 🥸) **<span style="color:purple">"Artificial Intelligence-created NFT Art Site"</span>** (aka **AI NFT Art**)
-
 
 ### S2 - 1. Get your credentials
 Your hosts in the session will provide the instructions for this step.
@@ -76,9 +79,9 @@ await window.tsPlatform.initialize({
 Transmit Security Detection and Response Services (DRS) SDK collects a lot of information that is sent to Transmit Security backend, where hundreds of detection algorithms are run simultaneously to detect attacks and weird or unexpected behavior.
 Lucky you! We already integrate the SDK during the previous session, so this step is already done 🍻.
 
-If you don't believe it, just open the *Developer Tools* on your browser, go to the *Network* tab and click around in the page. You will see requests to `https://collect.riskid.security/device/events`. There you have Transmit SDK sending telemetry! 🤩
+If you don't believe it, just open the _Developer Tools_ on your browser, go to the _Network_ tab and click around in the page. You will see requests to `https://collect.riskid.security/device/events`. There you have Transmit SDK sending telemetry! 🤩
 
-So we are already collecting information and sending it to Transmit DRS collectors, but that doesn't help us, right? We want to make use of that information and ask Transmit for a risk recommendation based on the IA, ML models and algorithms applied to the collected data, and do it in the places on the website that interest us, for example the *login* (also called **user authentication**), so let's do it. We will use the SDK to trigger an user action from client side, and then from backend, get the recommendation from Transmit DRS and based on that recommendation, decide how to proceed.
+So we are already collecting information and sending it to Transmit DRS collectors, but that doesn't help us, right? We want to make use of that information and ask Transmit for a risk recommendation based on the IA, ML models and algorithms applied to the collected data, and do it in the places on the website that interest us, for example the _login_ (also called **user authentication**), so let's do it. We will use the SDK to trigger an user action from client side, and then from backend, get the recommendation from Transmit DRS and based on that recommendation, decide how to proceed.
 
 Let's start implementing the client side, triggering the _login_ action and getting a token from Transmit. Then, in the next step, we will use that token at server side to get the risk recommendation 🪄.
 
@@ -163,7 +166,7 @@ Ooook, time to get this `actionToken` at server side and see the risk/trust reco
 
 The first thing that we need is a method to call the Transmit backend API to get the risk recommendation from the `actionToken`. This method, although backend to backend communication, needs to be protected, so a **client access token** is also required.
 
-If you followed the previous workshop (if not don't worry and keep reading 😉) you surely remember we created a method to get the **client access token**. We are going to make a small change because the tokens for Transmit DRS need a concrete *resource* param, so go to `webinar-server/src/services/transmitService.js`, look for the definition of `getClientAccessToken`, that looks like this:
+If you followed the previous workshop (if not don't worry and keep reading 😉) you surely remember we created a method to get the **client access token**. We are going to make a small change because the tokens for Transmit DRS need a concrete _resource_ param, so go to `webinar-server/src/services/transmitService.js`, look for the definition of `getClientAccessToken`, that looks like this:
 
 ```Javascript
 /**
@@ -240,7 +243,7 @@ export const getDRSClientAccessToken = async () => {
 };
 ```
 
-As you can see, we have added a new param in the original method to request the token based on a *resource* if present. Also we added a convenience method to get a **client access token** for DRS.
+As you can see, we have added a new param in the original method to request the token based on a _resource_ if present. Also we added a convenience method to get a **client access token** for DRS.
 
 Perfect, we have everything we need to get the recommendation. In the same `transmitService.js` file we are editing, add the following method definition:
 
@@ -359,7 +362,7 @@ export const RECOMMENDATIONS = {
 ```
 (With this new constants we also get rid of the error we had in `transmitService.js`)
 
-And finally, it's time to update the *router* and add the controls we've just created to our *passkeys-based* login. Open `webinar-server/src/routes/defaultRouter.js`.
+And finally, it's time to update the _router_ and add the controls we've just created to our _passkeys-based_ login. Open `webinar-server/src/routes/defaultRouter.js`.
 
 At the top of the file, add the following imports:
 
@@ -470,7 +473,7 @@ try {
 window.location.href = '/home.html';
 ```
 
-We are just calling Transmit SDK to set the authenticated user, in this case, with the *email*, that is what we are using to identify the users.
+We are just calling Transmit SDK to set the authenticated user, in this case, with the _email_, that is what we are using to identify the users.
 
 **AWESOME!** 😎, you just added (basic) logic to your login process to get risk context information and make an informed decision to let your users continue authenticating or not. 💪
 
@@ -494,14 +497,13 @@ Things we are going to do in the refactoring:
 - Split `webinar-vanilla-js/src/main.js` into several javascript files in the folder `webinar-vanilla-js/src/js/` to keep every functionality separated and more clean&clear.
 - Move Transmit SDK load and initialization outside of the html pages (we are creating a function `loadAndInitTsSdk` exported by `main.js` taking care of this).
 
-In addition, we took advantage of the refactoring to add risk context to all the *login* and *registration* flows, and also to the *checkout* flow with some particularities we'll see in a moment.
+In addition, we took advantage of the refactoring to add risk context to all the _login_ and _registration_ flows, and also to the _checkout_ flow with some particularities we'll see in a moment.
 
 You can get the 🌟 refactored code 🌟 from here:
 
 ```Bash
 git clone -b step2-final-refactor https://github.com/transmitsecurity/workshop-latam
 ```
-
 
 👀❗ Don't forget to create the **.env** file and update the relevant values (_client_id_, _client_secret_ and _jwt_client_secret_). Or if you prefer to reuse the one you created at the beginning, simply add this key value pair:
 
@@ -515,7 +517,6 @@ Finally, install the dependencies and start the application:
 npm install
 npm start
 ```
-
 
 The rest of the changes we made mainly consist on:
 
@@ -559,12 +560,12 @@ body: JSON.stringify({
 ...
 ```
 
-In both cases, we also included similar code to the one we created for the *login* use case in the _router_ and _controller_.
+In both cases, we also included similar code to the one we created for the _login_ use case in the _router_ and _controller_.
 
 And while we are at it, we did the same for the password based login and registration, just in case 😎.
 
 #### S2 - 4.3 Transaction information in Checkout risk context
-So far, so good, all the code we have added is just a copycat of what we did step by step in the *login with passkeys* functionality, but there is something worth highlighting related to the checkout: Transmit DRS allows you to add transactional related information to the `triggerActionEvent` call to get more context and provide more accurate recommendations taking into account information like the amount, the currency, the reason, the date, payee and payer information, etc. (all the information that can be sent is available [here](https://developer.transmitsecurity.com/sdk-ref/platform/interfaces/transactiondata/)).
+So far, so good, all the code we have added is just a copycat of what we did step by step in the _login with passkeys_ functionality, but there is something worth highlighting related to the checkout: Transmit DRS allows you to add transactional related information to the `triggerActionEvent` call to get more context and provide more accurate recommendations taking into account information like the amount, the currency, the reason, the date, payee and payer information, etc. (all the information that can be sent is available [here](https://developer.transmitsecurity.com/sdk-ref/platform/interfaces/transactiondata/)).
 
 So, since we allow customers to make a purchase, we can take advantage of this and include some of the data collected in the purchase form. This way, Transmit DRS can use this data in its AI and ML models and improve the detection as stated in the previous paragraph:
 
@@ -676,7 +677,7 @@ const reportActionResult = async (actionToken, result, userId = null, challengeT
 };
 ```
 
-and also exported helper methods to call `reportActionResult` in every action, something similar to this one for the *login* action:
+and also exported helper methods to call `reportActionResult` in every action, something similar to this one for the _login_ action:
 
 ```Javascript
 /**
