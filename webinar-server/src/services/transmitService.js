@@ -11,7 +11,6 @@ import {
   IDO_TOKEN_ISSUER,
   ERROR_IDO_INVALID_TOKEN_ISSUER,
   ERROR_IDO_TOKEN_EXPIRED,
-  ERROR_IDO_INVALID_TOKEN,
 } from '../helpers/constants.js';
 
 /**
@@ -228,41 +227,46 @@ export const reportDRSActionResult = async (
   }
 };
 
-/**
- * Validate IDO token
- * @param {Object} token IDO journey output token
- * @param {String} idoClientAccessToken Bearer token for Mosaic APIs
- * @returns decoded token if valid
- * @throws {Error} if token is invalid
- */
-export const validateIDOToken = async (token, idoClientAccessToken) => {
-  // Token decoded and not verified. Verification below through IDO introspection
-  const decoded = jwt.decode(token);
-
-  if (!idoClientAccessToken) {
-    idoClientAccessToken = await getClientAccessToken();
-  }
-
-  // Verify the token signature, return token or error
-  const resp = await fetch(
-    `${process.env.VITE_TS_BASE_URL}/ido/api/v2/token/introspect?clientId=${process.env.VITE_TS_CLIENT_ID}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${idoClientAccessToken}`,
-      },
-      body: JSON.stringify({
-        token: token,
-      }),
+/*
+{
+  "header": {
+    "kid": "TS",
+    "typ": "JWT",
+    "alg": "HS256"
+  },
+  "payload": {
+    "sub": "f288jeahzau9zl7ds7wqz",
+    "op": "auth",
+    "dsid": "594f0a8c-0b2d-427c-98ea-b1858f7b2a92",
+    "iss": "TS",
+    "pid": "AINFTArt-Login",
+    "params": {
+      "username": "demo@demo.demo",
+      "password": "Demo1234!"
     },
-  );
-  // Introspection response -> (error_code == 0) means valid token
-  const data = await resp.json();
-  if (!resp.ok || data.error_code !== 0) {
-    console.error(ERROR_IDO_INVALID_TOKEN);
-    throw new Error(ERROR_IDO_INVALID_TOKEN);
-  }
+    "external_user_id": "demo@demo.demo",
+    "sid": "268ceaaa-91a7-4f42-8c8b-b6ea9694f40e",
+    "aud": "default_application",
+    "pvid": "default_version",
+    "exp": 1726761841,
+    "iat": 1726760041,
+    "jti": "7ebe0717-0983-49fa-b29d-e72293a007f6",
+    "did": "850e2b5c-9d4e-44d1-ad97-aeb19d05f9c0"
+  },
+  "signature": "-ebBI0hbpShvThdbZaCapiZ0H-8tviDqHUqrRV7P5Lk"
+}
+*/
+export const validateIDOToken = async (token) => {
+  // TODO: implement validation (signature, data, etc) -> jwt.verify instead of jwt.decode
+  console.log('##########################################'); // FIXME: deleteme
+  console.log('##########################################'); // FIXME: deleteme
+  console.log('#####    PENDING Token Validation    #####'); // FIXME: deleteme
+  console.log('##########################################'); // FIXME: deleteme
+  console.log('##########################################'); // FIXME: deleteme
+  console.log(token); // FIXME: delete
+  const decoded = jwt.decode(token); // FIXME: verify instead of decode
+  console.log(decoded); // FIXME: delete
+  // Verify the token signature, return token or error
 
   // Verify token issuer
   if (decoded.iss !== IDO_TOKEN_ISSUER) {
@@ -277,7 +281,7 @@ export const validateIDOToken = async (token, idoClientAccessToken) => {
   const iat = decoded.iat;
   console.log(
     `iat<---${now - iat}--->now (${new Date(d_now - d_now.getTimezoneOffset() * 60 * 1000).toISOString()})<---${exp - now}--->exp`,
-  ); // TODO: for visibility only
+  );
   if (exp < now) {
     console.error(ERROR_IDO_TOKEN_EXPIRED);
     throw new Error(ERROR_IDO_TOKEN_EXPIRED);

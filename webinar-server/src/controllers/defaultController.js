@@ -33,22 +33,18 @@ const auth = async (userid, password) => {
 /**
  * Create a new user with a given userid and password
  * @param {String} userid
- * @param {String} password (optional)
+ * @param {String} password
  * @returns JWT token for the user
  */
 const register = async (userid, password) => {
   try {
-    const user = { userid };
-    if (password) {
-      const hash = await bcryptHashSync(password);
-      user.password = hash;
-    }
-    console.log(`Creating user: ${JSON.stringify(user)}`);
+    const hash = await bcryptHashSync(password);
+    console.log({ userid, password: hash });
     // NOTE: For simplicity, we are not checking for duplicate user entries
     // In a production system, you would check if the user already exists
     // and in case of a duplicate, return an error to the client offering
     // mechanisms to recover the account, contact support, etc.
-    await dbService.addUser(user);
+    await dbService.addUser({ userid, password: hash });
 
     const token = signSessionJWT(userid);
     console.log(`User created successfully: ${userid}, token: ${token}`);

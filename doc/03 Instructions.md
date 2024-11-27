@@ -9,7 +9,8 @@ Welcome to the 🌟<span style="color:red">**THIRD WEBINAR**</span>🌟 in this 
 If you already watched and/or did 🥳 the [first one](./01%20Instructions.md) or the [second one](./02%20Instructions.md), we are going to continue working with the same application, but in this case, we are going to move the logic behind some actions, like the login, the registration, and the checkout, to a centralized place: the **Mosaic Identity Orchestration Service**, and we will see how easy is to modify the logic behind each journey from a no-code editor via the Mosaic portal. If you are new to this series, don't worry at all, you don't need any previous context to follow this one and the starting code is ready for everyone, so just keep reading and 💻 **good coding** 💻!
 
 The code to follow along the webinar can be found on this repo:
-  - Initial state (login): Branch `step3-01-login` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-01-login))
+    - Initial state (before starting integration): Branch `step3-starter` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-starter))
+    - Intermediate state (Login): Branch `step3-01-login` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-01-login))
   - Intermediate state (Registration): Branch `step3-03-register` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-02-register))
   - Final code: Branch `step3-final` ([GitHub Link](https://github.com/TransmitSecurity/workshop-latam/tree/step3-final))
 
@@ -1276,9 +1277,6 @@ There are some other changes and enhancements. Feel free to take a look at it in
 ```Bash
 git clone -b step3-final https://github.com/transmitsecurity/workshop-latam
 ```
-
-> [!NOTE] NOTE
-> _Remember to check and update your **.env** file with the variables in `dotenv.example` and to restart the server to get the changes after updating it_.
 
 For this webinar, we configured the `Limit amount` for the _purchase_ as **$ 100** 💰. Try to buy enough _NFTs_ to see what happens 😅
 
